@@ -1,0 +1,28 @@
+[package]
+name = "ecs_helpers"
+description = "A tool for managing the deployment process of an application in Amazon Elastic Container Service (ECS)"
+authors = ["Vasiliy Kuzenkove <batbondik0@gmail.com>"]
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.75.0"
+
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
+
+[dependencies]
+aws-config = { version = "1.1.1", features = ["behavior-version-latest"] }
+aws-sdk-ecr = "1.9.0"
+aws-sdk-ecrpublic = "1.9.0"
+aws-sdk-ecs = "1.9.0"
+aws-sdk-ssm = "1.9.0"
+base64 = "0.21.5"
+clap = { version = "4.4.12", features = ["derive", "env"] }
+env_logger = "0.10.1"
+log = "0.4.20"
+miette = { version = "5.10.0", features = ["fancy"] }
+thiserror = "1.0.56"
+tokio = { version = "1", features = ["full"] }
+
+[dev-dependencies]
+assert_cmd = "2.0.12"
