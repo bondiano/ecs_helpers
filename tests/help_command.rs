@@ -29,3 +29,14 @@ fn test_login_help() {
     .success()
     .stderr("");
 }
+
+#[test]
+fn test_export_images_help() {
+  assert_cmd::Command::cargo_bin("ecs_helpers")
+    .unwrap()
+    .arg("export_images")
+    .arg("--help")
+    .assert()
+    .success()
+    .stderr("");
+}

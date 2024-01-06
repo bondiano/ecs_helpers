@@ -1,11 +1,23 @@
 use aws_sdk_ecr::{
-  error::SdkError, operation::get_authorization_token::GetAuthorizationTokenError,
+  error::SdkError,
+  operation::{
+    describe_images::DescribeImagesError, describe_repositories::DescribeRepositoriesError,
+    get_authorization_token::GetAuthorizationTokenError,
+  },
 };
 use miette::Diagnostic;
 use thiserror::Error;
 
 #[derive(Debug, Error, Diagnostic)]
 pub enum EcsHelperVarietyError {
+  #[error("Failed to extract commit sha")]
+  #[diagnostic(code(ecs_helper::config::extract_commit_sha_error))]
+  ExtractCommitShaError,
+
+  #[error("Failed to extract environment")]
+  #[diagnostic(code(ecs_helper::config::extract_environment_error))]
+  ExtractEnvironmentError,
+
   #[error(transparent)]
   #[diagnostic(code(ecs_helper::write::io_error))]
   IoError(#[from] std::io::Error),
@@ -37,4 +49,12 @@ pub enum EcsHelperVarietyError {
   #[error("Login command was failed\nWith status: {0}")]
   #[diagnostic(code(ecs_helper::login::login_failed))]
   LoginFailed(String),
+
+  #[error("Failed to describe repositories:\n{0}")]
+  #[diagnostic(code(ecs_helper::ecr::describe_repositories_error))]
+  DescribeRepositoriesError(SdkError<DescribeRepositoriesError>),
+
+  #[error("Describe images was failed:\n{0}")]
+  #[diagnostic(code(ecs_helper::ecr::describe_images_error))]
+  DescribeImagesError(SdkError<DescribeImagesError>),
 }
