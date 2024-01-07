@@ -1,4 +1,4 @@
-FROM lukemathwalker/cargo-chef:latest-rust-1.75.0-slim-bullseye as chef
+FROM lukemathwalker/cargo-chef:latest-rust-1.75.0-alpine as chef
 WORKDIR /ecs_helpers
 
 FROM chef AS planner
@@ -7,8 +7,8 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef as builder
 
-RUN apt-get update && \
-    apt-get -y install pkg-config openssl libssl-dev
+RUN apk update && apk upgrade && \
+  apk add libressl-dev
 COPY --from=planner /ecs_helpers/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 
@@ -16,12 +16,8 @@ COPY . .
 
 RUN cargo build --release
 
-FROM debian:bullseye-slim
+FROM docker:24.0.7-cli-alpine3.19
 WORKDIR /app
-
-RUN apt-get update && \
-  apt-get install -y ca-certificates && \
-  rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /ecs_helpers/target/release/ecs_helpers /
 
