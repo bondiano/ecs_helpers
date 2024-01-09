@@ -14,7 +14,10 @@ async fn get_token(config: &SdkConfig) -> miette::Result<String, EcsHelperVariet
     .send()
     .await
     .map_err(EcsHelperVarietyError::GetTokenError)?;
-  let auth_data = auth_token_data.authorization_data().first().unwrap();
+  let auth_data = auth_token_data
+    .authorization_data()
+    .first()
+    .ok_or(EcsHelperVarietyError::ExtractTokenError)?;
 
   let base_64_engine =
     engine::GeneralPurpose::new(&alphabet::STANDARD, engine::general_purpose::PAD);

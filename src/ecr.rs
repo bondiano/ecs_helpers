@@ -1,11 +1,12 @@
 use aws_config::SdkConfig;
 use aws_sdk_ecr::{
-  types::{ImageDetail, Repository},
+  types::{ImageDetail, ImageIdentifier, Repository},
   Client,
 };
 
 use crate::errors::EcsHelperVarietyError;
 
+#[derive(Debug, Clone)]
 pub struct EcrClient {
   client: Client,
 }
@@ -33,16 +34,21 @@ impl EcrClient {
   pub async fn describe_images(
     &self,
     repository_name: &str,
+    image_id: ImageIdentifier,
   ) -> miette::Result<ImageDetail, EcsHelperVarietyError> {
     let response = self
       .client
       .describe_images()
       .repository_name(repository_name)
+      .image_ids(image_id)
       .send()
       .await
       .map_err(EcsHelperVarietyError::DescribeImagesError)?;
 
-    let image_details = response.image_details().first().unwrap();
+    let image_details = response
+      .image_details()
+      .first()
+      .ok_or(EcsHelperVarietyError::ExtractImageError)?;
 
     Ok(image_details.to_owned())
   }

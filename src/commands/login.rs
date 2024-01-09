@@ -4,9 +4,9 @@ use aws_config::{Region, SdkConfig};
 
 #[derive(Debug)]
 pub struct LoginCommandOptions {
-  pub aws_account_id: String,
-  pub region: Region,
-  pub config: SdkConfig,
+  aws_account_id: String,
+  region: Region,
+  config: SdkConfig,
 }
 
 impl LoginCommandOptions {

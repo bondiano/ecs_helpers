@@ -1,51 +1,21 @@
-use clap::{Parser, Subcommand};
-use ecs_helpers::config::Config;
+use clap::Parser;
+use ecs_helpers::{
+  args::{Args, Commands},
+  config::Config,
+};
 use env_logger::Env;
 use miette::Context;
 
-use crate::commands::{ExportImagesCommandOptions, LoginCommandOptions};
+use crate::commands::{ExportImagesCommandOptions, LoginCommandOptions, RunCommandCommand};
 
 mod commands;
-
-#[derive(Parser, Debug)]
-#[clap(version)]
-struct Args {
-  #[clap(short, long, env)]
-  environment: Option<String>,
-
-  #[clap(subcommand)]
-  cmd: Commands,
-}
-
-#[derive(Subcommand, Debug)]
-enum Commands {
-  /// Login to AWS ECR. It assumes that you have already set up your AWS credentials.
-  #[clap(alias = "ecs_login")]
-  Login {
-    /// The AWS account ID
-    #[clap(long, env)]
-    aws_account_id: String,
-  },
-
-  // Prints images for the project and application
-  #[clap(alias = "export_images")]
-  ExportImages {
-    // Project name
-    #[clap(short, long, env)]
-    project: String,
-
-    // Application name
-    #[clap(short, long, env)]
-    application: String,
-  },
-}
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
   env_logger::Builder::from_env(Env::default().default_filter_or("warn")).init();
 
   let args = Args::parse();
-  let config = Config::new(args.environment).await?;
+  let config = Config::new(&args).await?;
 
   match args.cmd {
     Commands::Login { aws_account_id } => {
@@ -68,12 +38,8 @@ async fn main() -> miette::Result<()> {
         }
       }
     }
-    Commands::ExportImages {
-      project,
-      application,
-    } => {
-      let command_options: ExportImagesCommandOptions =
-        ExportImagesCommandOptions::new(config, project, application).await?;
+    Commands::ExportImages { application } => {
+      let command_options = ExportImagesCommandOptions::new(config, application).await?;
 
       log::info!("Export images");
 
@@ -85,11 +51,40 @@ async fn main() -> miette::Result<()> {
         Ok(result) => {
           log::info!("Export images was successful");
 
-          println!("{}", result);
+          println!("{result}");
           Ok(())
         }
         Err(error) => {
           log::error!("Export images was failed: {}", error);
+          Err(error)
+        }
+      }
+    }
+    Commands::RunCommand {
+      cluster,
+      service,
+      timeout,
+      command,
+      name,
+      container,
+    } => {
+      log::info!("Run command: {}", command);
+
+      let run_command_command =
+        RunCommandCommand::new(config, timeout, command, cluster, service, name, container).await?;
+
+      let run_command_result = run_command_command
+        .run()
+        .await
+        .wrap_err("ecs_helpers::run_command");
+
+      match run_command_result {
+        Ok(_) => {
+          log::info!("Run command was successful");
+          Ok(())
+        }
+        Err(error) => {
+          log::error!("Run command was failed: {}", error);
           Err(error)
         }
       }

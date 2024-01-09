@@ -40,3 +40,14 @@ fn test_export_images_help() {
     .success()
     .stderr("");
 }
+
+#[test]
+fn test_run_command_help() {
+  assert_cmd::Command::cargo_bin("ecs_helpers")
+    .unwrap()
+    .arg("run_command")
+    .arg("--help")
+    .assert()
+    .success()
+    .stderr("");
+}
