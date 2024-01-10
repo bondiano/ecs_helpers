@@ -1,43 +1,39 @@
-use ecs_helpers::{auth, errors::EcsHelperVarietyError};
-
-use aws_config::{Region, SdkConfig};
+use ecs_helpers::{
+  args::LoginCommandArguments, auth, config::Config, errors::EcsHelperVarietyError, Command,
+};
 
 #[derive(Debug)]
-pub struct LoginCommandOptions {
+pub struct LoginCommand {
   aws_account_id: String,
-  region: Region,
-  config: SdkConfig,
+  config: Config,
 }
 
-impl LoginCommandOptions {
-  pub async fn new(aws_account_id: String) -> miette::Result<Self> {
-    let config = aws_config::load_from_env().await;
-    let region = config
-      .region()
-      .ok_or(EcsHelperVarietyError::GetRegionError)?
-      .clone();
-
-    Ok(Self {
+impl LoginCommand {
+  pub fn new(config: Config, arguments: LoginCommandArguments) -> Self {
+    Self {
       config,
-      region,
-      aws_account_id,
-    })
+      aws_account_id: arguments.aws_account_id,
+    }
   }
 }
 
-pub async fn login(options: LoginCommandOptions) -> miette::Result<(), EcsHelperVarietyError> {
-  let auth_output = auth::login_to_ecr(
-    &options.config,
-    options.region.to_string(),
-    options.aws_account_id,
-  )
-  .await?;
+impl Command for LoginCommand {
+  fn name(&self) -> String {
+    "login".to_string()
+  }
 
-  if auth_output.status.success() {
-    Ok(())
-  } else {
-    Err(EcsHelperVarietyError::LoginFailed(
-      auth_output.status.to_string(),
-    ))
+  async fn run(&self) -> miette::Result<(), EcsHelperVarietyError> {
+    let sdk_config = &self.config.sdk_config;
+    let region = &self.config.region;
+
+    let auth_output = auth::login_to_ecr(sdk_config, region, &self.aws_account_id).await?;
+
+    if auth_output.status.success() {
+      Ok(())
+    } else {
+      Err(EcsHelperVarietyError::LoginFailed(
+        auth_output.status.to_string(),
+      ))
+    }
   }
 }

@@ -1,5 +1,8 @@
-use crate::{args::Args, errors::EcsHelperVarietyError};
+use crate::{args::CommandArguments, errors::EcsHelperVarietyError};
+use aws_config::{Region, SdkConfig};
 use git2::Repository;
+
+const DEFAULT_REGION: &str = "us-east-1";
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -7,10 +10,14 @@ pub struct Config {
   pub version: String,
   pub project: String,
   pub application: String,
+  pub region: Region,
+  pub sdk_config: SdkConfig,
 }
 
 impl Config {
-  pub async fn new(args: &Args) -> miette::Result<Self, EcsHelperVarietyError> {
+  pub async fn new(args: &CommandArguments) -> miette::Result<Self, EcsHelperVarietyError> {
+    let sdk_config = aws_config::load_from_env().await;
+
     let commit_sha = Config::extract_commit_sha()?;
     let environment = Config::extract_environment(&args.environment)?;
     let version = args.version.to_owned().unwrap_or(Config::extract_version(
@@ -20,8 +27,14 @@ impl Config {
     ));
     let project = args.project.to_owned();
     let application = args.application.to_owned().unwrap_or("".to_string());
+    let region = sdk_config
+      .region()
+      .unwrap_or(&Region::new(DEFAULT_REGION))
+      .to_owned();
 
     Ok(Self {
+      region,
+      sdk_config,
       application,
       version,
       environment,

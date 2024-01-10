@@ -1,61 +1,66 @@
-use aws_config::SdkConfig;
-use ecs_helpers::{config::Config, ecr::EcrClient, errors::EcsHelperVarietyError};
+use ecs_helpers::{
+  args::ExportImagesArguments, config::Config, ecr::EcrClient, errors::EcsHelperVarietyError,
+  Command,
+};
 use regex::Regex;
 
 #[derive(Debug)]
-pub struct ExportImagesCommandOptions {
-  sdk_config: SdkConfig,
+pub struct ExportImagesCommand {
   config: Config,
-  application: String,
 }
 
-impl ExportImagesCommandOptions {
-  pub async fn new(config: Config, application: String) -> miette::Result<Self> {
-    let sdk_config = aws_config::load_from_env().await;
-
-    Ok(Self {
-      sdk_config,
-      config,
-      application,
-    })
+impl ExportImagesCommand {
+  pub fn new(config: Config, _: ExportImagesArguments) -> Self {
+    Self { config }
   }
 }
 
-pub async fn export_images(
-  options: ExportImagesCommandOptions,
-) -> miette::Result<String, EcsHelperVarietyError> {
-  let ecr_client = EcrClient::new(&options.sdk_config);
-  let project = &options.config.project;
-  let version = &options.config.version;
+impl Command for ExportImagesCommand {
+  fn name(&self) -> String {
+    "export_images".to_string()
+  }
 
-  let private_repositories = ecr_client.get_private_repositories().await?;
-  let private_repositories_entries = private_repositories
-    .iter()
-    .filter_map(|repo| {
-      let repository_name = repo.repository_name()?;
+  async fn run(&self) -> miette::Result<(), EcsHelperVarietyError> {
+    let version = &self.config.version;
+    let project = &self.config.project;
+    let application = &self.config.application;
+    let sdk_config = &self.config.sdk_config;
 
-      let pattern = format!("{}-{}-(.*)", project, options.application);
-      let re = Regex::new(&pattern).unwrap();
+    let ecr_client = EcrClient::new(sdk_config);
 
-      let container_name = re.captures(repository_name);
-      let container_name = container_name.as_ref()?;
+    let private_repositories = ecr_client.get_private_repositories().await?;
+    let private_repositories_entries = private_repositories
+      .iter()
+      .filter_map(|repo| {
+        let repository_name = repo.repository_name()?;
 
-      let container_name = container_name.get(1)?.as_str();
+        let pattern = format!("{}-{}-(.*)", project, application);
+        let re = Regex::new(&pattern).unwrap();
 
-      let key = container_name.to_uppercase().replace('-', "_") + "_IMAGE";
+        let container_name = re.captures(repository_name);
+        let container_name = container_name.as_ref()?;
 
-      let repository_uri = repo.repository_uri()?;
-      let value = format!("{repository_uri}:{version}");
+        let container_name = container_name.get(1)?.as_str();
 
-      Some(format!("{}={}", key, value))
-    })
-    .collect::<Vec<String>>();
+        let key = container_name.to_uppercase().replace('-', "_") + "_IMAGE";
 
-  let variables_array = Vec::from(["export".to_string()]);
-  let variables_array = variables_array
-    .into_iter()
-    .chain(private_repositories_entries.into_iter())
-    .collect::<Vec<String>>();
+        let repository_uri = repo.repository_uri()?;
+        let value = format!("{repository_uri}:{version}");
 
-  Ok(variables_array.join(" "))
+        Some(format!("{}={}", key, value))
+      })
+      .collect::<Vec<String>>();
+
+    let variables_array = Vec::from(["export".to_string()]);
+    let variables_array = variables_array
+      .into_iter()
+      .chain(private_repositories_entries.into_iter())
+      .collect::<Vec<String>>();
+
+    let variables = variables_array.join("\n");
+
+    println!("{}", variables);
+
+    Ok(())
+  }
 }

@@ -3,8 +3,8 @@ use std::time::Duration;
 use aws_sdk_ecr::types::{ImageIdentifier, Repository};
 use aws_sdk_ecs::types::{ContainerDefinition, Task};
 use ecs_helpers::{
-  cluster_helpers, config::Config, ecr::EcrClient, ecs::EcsClient, errors::EcsHelperVarietyError,
-  service_helpers,
+  args::RunCommandArguments, cluster_helpers, config::Config, ecr::EcrClient, ecs::EcsClient,
+  errors::EcsHelperVarietyError, service_helpers, Command,
 };
 
 const DEFAULT_STEP: u64 = 5;
@@ -17,49 +17,26 @@ pub struct RunCommandCommand {
   config: Config,
   command: String,
   timeout: u64,
-  cluster: String,
-  service: String,
+  cluster: Option<String>,
+  service: Option<String>,
   name: Option<String>,
   container: Option<String>,
 }
 
-impl RunCommandCommand {
-  pub async fn new(
-    config: Config,
-    timeout: u64,
-    command: String,
-    cluster: Option<String>,
-    service: Option<String>,
-    name: Option<String>,
-    container: Option<String>,
-  ) -> miette::Result<Self> {
-    let sdk_config = aws_config::load_from_env().await;
-    let ecs_client = EcsClient::new(&sdk_config);
-    let ecr_client = EcrClient::new(&sdk_config);
-
-    let cluster = cluster_helpers::get_current_cluster(&ecs_client, &config, &cluster).await?;
-
-    let service =
-      service_helpers::get_current_service(&ecs_client, &config, &cluster, &service).await?;
-
-    Ok(Self {
-      ecs_client,
-      ecr_client,
-      config,
-      timeout,
-      cluster,
-      service,
-      command,
-      name,
-      container,
-    })
+impl Command for RunCommandCommand {
+  fn name(&self) -> String {
+    "run_command".to_string()
   }
 
-  pub async fn run(&self) -> miette::Result<Task, EcsHelperVarietyError> {
-    let service = self
-      .ecs_client
-      .describe_service(&self.cluster, &self.service)
-      .await?;
+  async fn run(&self) -> miette::Result<(), EcsHelperVarietyError> {
+    let cluster =
+      cluster_helpers::get_current_cluster(&self.ecs_client, &self.config, &self.cluster).await?;
+
+    let service =
+      service_helpers::get_current_service(&self.ecs_client, &self.config, &cluster, &self.service)
+        .await?;
+
+    let service = self.ecs_client.describe_service(&cluster, &service).await?;
 
     let service_task_definition = service.task_definition().unwrap().to_owned();
 
@@ -156,7 +133,7 @@ impl RunCommandCommand {
     let task = self
       .ecs_client
       .run_task(
-        &self.cluster,
+        &cluster,
         &task_definition_arn,
         &network_configuration,
         service.launch_type(),
@@ -167,7 +144,36 @@ impl RunCommandCommand {
 
     let task_arn = task.task_arn().unwrap().to_owned();
 
-    self.wait_for_task(&task_arn, &self.cluster).await
+    self.wait_for_task(&task_arn, &cluster).await?;
+
+    Ok(())
+  }
+}
+
+impl RunCommandCommand {
+  pub fn new(config: Config, options: RunCommandArguments) -> Self {
+    let sdk_config = &config.sdk_config;
+    let ecs_client = EcsClient::new(sdk_config);
+    let ecr_client = EcrClient::new(sdk_config);
+
+    let command = options.command;
+    let timeout = options.timeout;
+    let cluster = options.cluster;
+    let service = options.service;
+    let name = options.name;
+    let container = options.container;
+
+    Self {
+      ecs_client,
+      ecr_client,
+      config,
+      timeout,
+      cluster,
+      service,
+      command,
+      name,
+      container,
+    }
   }
 
   async fn container_definition_to_ecr(

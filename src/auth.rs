@@ -1,6 +1,6 @@
 use std::process::{Output, Stdio};
 
-use aws_config::SdkConfig;
+use aws_config::{Region, SdkConfig};
 use aws_sdk_ecr::Client as EcrClient;
 use base64::{alphabet, engine, Engine};
 use tokio::{io::AsyncWriteExt, process::Command};
@@ -40,9 +40,9 @@ async fn get_token(config: &SdkConfig) -> miette::Result<String, EcsHelperVariet
 }
 
 async fn run_docker_login(
-  account_id: &str,
-  region: &str,
-  token: &str,
+  account_id: &String,
+  region: &Region,
+  token: &String,
 ) -> miette::Result<Output, EcsHelperVarietyError> {
   let mut child = Command::new("docker")
     .stdin(Stdio::piped())
@@ -70,10 +70,10 @@ async fn run_docker_login(
 
 pub async fn login_to_ecr(
   sdk_config: &SdkConfig,
-  region: String,
-  account_id: String,
+  region: &Region,
+  account_id: &String,
 ) -> miette::Result<Output, EcsHelperVarietyError> {
   let token = get_token(sdk_config).await?;
 
-  run_docker_login(&account_id, region.as_ref(), &token).await
+  run_docker_login(account_id, region, &token).await
 }
