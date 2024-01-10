@@ -1,0 +1,24 @@
+#[test]
+fn test_run_command_command_without_environment() {
+  assert_cmd::Command::cargo_bin("ecs_helpers")
+    .unwrap()
+    .arg("--project")
+    .arg("test")
+    .arg("--environment")
+    .arg("test")
+    .arg("run_command")
+    .arg("-c")
+    .arg("ls")
+    .arg("--timeout")
+    .arg("1")
+    .arg("--cluster")
+    .arg("test")
+    .arg("--service")
+    .arg("test")
+    .arg("--name")
+    .arg("test")
+    .arg("--container")
+    .arg("test")
+    .assert()
+    .failure();
+}

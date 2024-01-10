@@ -29,8 +29,6 @@ async fn main() -> miette::Result<()> {
       run_command(export_images_command).await
     }
     Commands::RunCommand(options) => {
-      log::info!("Run command: {}", options.command);
-
       let run_command_command = RunCommandCommand::new(config, options);
 
       run_command(run_command_command).await
