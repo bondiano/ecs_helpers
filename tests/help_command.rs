@@ -51,3 +51,14 @@ fn test_run_command_help() {
     .success()
     .stderr("");
 }
+
+#[test]
+fn test_export_env_secrets_help() {
+  assert_cmd::Command::cargo_bin("ecs_helpers")
+    .unwrap()
+    .arg("export_env_secrets")
+    .arg("--help")
+    .assert()
+    .success()
+    .stderr("");
+}

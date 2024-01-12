@@ -1,4 +1,5 @@
 use clap::Parser;
+use commands::ExportEnvSecretsCommand;
 use ecs_helpers::{
   args::{CommandArguments, Commands},
   command::run_command,
@@ -32,6 +33,11 @@ async fn main() -> miette::Result<()> {
       let run_command_command = RunCommandCommand::new(config, options);
 
       run_command(run_command_command).await
+    }
+    Commands::ExportEnvSecrets(options) => {
+      let export_env_secrets_command = ExportEnvSecretsCommand::new(config, options);
+
+      run_command(export_env_secrets_command).await
     }
   }
 }

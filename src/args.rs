@@ -64,6 +64,13 @@ pub struct RunCommandArguments {
   pub container: Option<String>,
 }
 
+#[derive(Args, Debug)]
+pub struct ExportEnvSecretsCommandArguments {
+  /// Env variables to export
+  #[clap(short, long, env)]
+  pub name: Option<Vec<String>>,
+}
+
 #[derive(Subcommand, Debug)]
 pub enum Commands {
   /// Login to AWS ECR. It assumes that you have already set up your AWS credentials.
@@ -77,4 +84,8 @@ pub enum Commands {
   /// Run command on ECS cluster
   #[clap(alias = "run_command")]
   RunCommand(RunCommandArguments),
+
+  /// Export environment variables from AWS SSM Parameter Store
+  #[clap(alias = "export_env_secrets")]
+  ExportEnvSecrets(ExportEnvSecretsCommandArguments),
 }

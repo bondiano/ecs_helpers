@@ -12,6 +12,7 @@ use aws_sdk_ecs::operation::{
   list_tasks::ListTasksError, register_task_definition::RegisterTaskDefinitionError,
   run_task::RunTaskError,
 };
+use aws_sdk_ssm::operation::get_parameters::GetParametersError;
 use miette::Diagnostic;
 use thiserror::Error;
 
@@ -136,4 +137,12 @@ pub enum EcsHelperVarietyError {
   #[error("Task {task_arn} was failed with code {code}")]
   #[diagnostic(code(ecs_helper::ecs::task_was_failed))]
   TaskWasFailed { task_arn: String, code: i32 },
+
+  #[error("Failed to ssm get parameters:\n{0}")]
+  #[diagnostic(code(ecs_helper::ssm::get_ssm_parameters_error))]
+  GetSSMParametersError(#[from] SdkError<GetParametersError>),
+
+  #[error("No ENV secrets to export. Please pass ENV variables names using -n")]
+  #[diagnostic(code(ecs_helper::ssm::no_env_variables_to_export))]
+  NoEnvVariablesToExport,
 }
