@@ -51,15 +51,9 @@ impl Command for ExportImagesCommand {
       })
       .collect::<Vec<String>>();
 
-    let variables_array = Vec::from(["export".to_string()]);
-    let variables_array = variables_array
-      .into_iter()
-      .chain(private_repositories_entries.into_iter())
-      .collect::<Vec<String>>();
+    let variables = private_repositories_entries.join(" ");
 
-    let variables = variables_array.join("\n");
-
-    println!("{}", variables);
+    println!("export {}", variables);
 
     Ok(())
   }
