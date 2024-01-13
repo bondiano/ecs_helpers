@@ -1,6 +1,6 @@
 use clap::{Args, Parser, Subcommand};
 
-#[derive(Parser, Debug)]
+#[derive(Parser)]
 #[clap(author, about, long_about = None)]
 pub struct CommandArguments {
   /// Use image tag env prefix
@@ -31,13 +31,28 @@ pub struct CommandArguments {
   pub cmd: Commands,
 }
 
-#[derive(Args, Debug)]
+#[derive(Args)]
+pub struct DeployCommandArguments {
+  /// Set timeout in seconds how long to wait until deployment finished
+  #[clap(short, long, env, default_value = "600")]
+  pub timeout: u64,
+
+  /// Set cluster name, could be auto-detected if project and environment are specified
+  #[clap(long, env)]
+  pub cluster: Option<String>,
+
+  /// Set service, could be auto-detected if application and environment are specified
+  #[clap(short, long, env)]
+  pub service: Option<String>,
+}
+
+#[derive(Args)]
 pub struct LoginCommandArguments {}
 
-#[derive(Args, Debug)]
+#[derive(Args)]
 pub struct ExportImagesArguments {}
 
-#[derive(Args, Debug)]
+#[derive(Args)]
 pub struct RunCommandArguments {
   /// Set command, should not demonize container
   #[clap(short, long, env)]
@@ -64,7 +79,7 @@ pub struct RunCommandArguments {
   pub container: Option<String>,
 }
 
-#[derive(Args, Debug)]
+#[derive(Args)]
 pub struct ExportEnvSecretsCommandArguments {
   /// Env variables to export
   #[clap(short, long, env)]
@@ -90,7 +105,7 @@ pub struct BuildAndPushCommandArguments {
   pub build_arg: Option<Vec<String>>,
 }
 
-#[derive(Subcommand, Debug)]
+#[derive(Subcommand)]
 pub enum Commands {
   /// Login to AWS ECR. It assumes that you have already set up your AWS credentials.
   #[clap(alias = "ecs_login")]
@@ -111,4 +126,7 @@ pub enum Commands {
   /// Build and push docker image to ECR
   #[clap(alias = "build_and_push")]
   BuildAndPush(BuildAndPushCommandArguments),
+
+  /// Deploy service to ECS cluster
+  Deploy(DeployCommandArguments),
 }

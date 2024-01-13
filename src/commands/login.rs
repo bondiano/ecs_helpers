@@ -2,7 +2,6 @@ use ecs_helpers::{
   args::LoginCommandArguments, auth, config::Config, errors::EcsHelperVarietyError, Command,
 };
 
-#[derive(Debug)]
 pub struct LoginCommand {
   config: Config,
 }

@@ -6,7 +6,6 @@ use aws_sdk_ecs::{
 
 use crate::errors::EcsHelperVarietyError;
 
-#[derive(Debug, Clone)]
 pub struct EcsClient {
   client: Client,
 }
@@ -193,5 +192,24 @@ impl EcsClient {
     };
 
     Ok(task.to_owned())
+  }
+
+  pub async fn update_service(
+    &self,
+    task_definition_arn: &String,
+  ) -> miette::Result<Service, EcsHelperVarietyError> {
+    let response = self
+      .client
+      .update_service()
+      .task_definition(task_definition_arn)
+      .send()
+      .await
+      .map_err(EcsHelperVarietyError::UpdateServiceError)?;
+
+    let service = response
+      .service()
+      .ok_or(EcsHelperVarietyError::ExtractServiceError)?;
+
+    Ok(service.to_owned())
   }
 }

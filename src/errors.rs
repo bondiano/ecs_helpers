@@ -10,7 +10,7 @@ use aws_sdk_ecs::operation::{
   describe_tasks::DescribeTasksError, list_clusters::ListClustersError,
   list_services::ListServicesError, list_task_definitions::ListTaskDefinitionsError,
   list_tasks::ListTasksError, register_task_definition::RegisterTaskDefinitionError,
-  run_task::RunTaskError,
+  run_task::RunTaskError, update_service::UpdateServiceError,
 };
 use aws_sdk_ssm::operation::get_parameters::GetParametersError;
 use miette::Diagnostic;
@@ -161,4 +161,16 @@ pub enum EcsHelperVarietyError {
   #[error("Failed to push image:\n{0}")]
   #[diagnostic(code(ecs_helper::docker::push_image_error))]
   PushImageError(String),
+
+  #[error("Failed to create image tag:\n{0}")]
+  #[diagnostic(code(ecs_helper::docker::create_image_tag_error))]
+  ContainerDefinitionImageError(String),
+
+  #[error("Failed to update service:\n{0}")]
+  #[diagnostic(code(ecs_helper::ecs::update_service_error))]
+  UpdateServiceError(#[from] SdkError<UpdateServiceError>),
+
+  #[error("Failed to extract service")]
+  #[diagnostic(code(ecs_helper::ecs::extract_service_error))]
+  ExtractServiceError,
 }

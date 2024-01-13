@@ -73,3 +73,14 @@ fn test_build_and_push_help() {
     .success()
     .stderr("");
 }
+
+#[test]
+fn test_deploy_help() {
+  assert_cmd::Command::cargo_bin("ecs_helpers")
+    .unwrap()
+    .arg("deploy")
+    .arg("--help")
+    .assert()
+    .success()
+    .stderr("");
+}

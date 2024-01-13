@@ -3,7 +3,6 @@ use ecs_helpers::{
   ssm::SSMClient, Command,
 };
 
-#[derive(Debug)]
 pub struct ExportEnvSecretsCommand {
   config: Config,
   variables_to_export: Option<Vec<String>>,

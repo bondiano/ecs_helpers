@@ -1,29 +1,25 @@
 use std::time::Duration;
 
 use aws_sdk_ecr::types::{ImageIdentifier, Repository};
-use aws_sdk_ecs::types::{ContainerDefinition, Task};
+use aws_sdk_ecs::types::{ContainerDefinition, Service};
 use ecs_helpers::{
-  args::RunCommandArguments, cluster_helpers, config::Config, ecr::EcrClient, ecs::EcsClient,
+  args::DeployCommandArguments, cluster_helpers, config::Config, ecr::EcrClient, ecs::EcsClient,
   errors::EcsHelperVarietyError, service_helpers, Command,
 };
 
 const DEFAULT_STEP: u64 = 5;
-const STOPPED_STATUS: &str = "STOPPED";
 
-pub struct RunCommandCommand {
+pub struct DeployCommand {
   ecs_client: EcsClient,
   ecr_client: EcrClient,
   config: Config,
-  command: String,
   timeout: u64,
   cluster: Option<String>,
   service: Option<String>,
-  name: Option<String>,
-  container: Option<String>,
 }
 
-impl RunCommandCommand {
-  pub fn new(config: Config, args: RunCommandArguments) -> Self {
+impl DeployCommand {
+  pub fn new(config: Config, args: DeployCommandArguments) -> Self {
     let sdk_config = &config.sdk_config;
     let ecs_client = EcsClient::new(sdk_config);
     let ecr_client = EcrClient::new(sdk_config);
@@ -32,12 +28,9 @@ impl RunCommandCommand {
       ecs_client,
       ecr_client,
       config,
-      name: args.name,
       timeout: args.timeout,
       cluster: args.cluster,
       service: args.service,
-      command: args.command,
-      container: args.container,
     }
   }
 
@@ -90,34 +83,24 @@ impl RunCommandCommand {
     Ok(new_container_definition)
   }
 
-  async fn wait_for_task(
+  async fn wait_for_deploy(
     &self,
-    task_arn: &String,
     cluster_arn: &String,
-  ) -> miette::Result<Task, EcsHelperVarietyError> {
+    service_arn: &String,
+  ) -> miette::Result<Service, EcsHelperVarietyError> {
     let mut timeout = self.timeout;
 
     while timeout > 0 {
-      let task = self.ecs_client.describe_task(task_arn, cluster_arn).await?;
+      let service = self
+        .ecs_client
+        .describe_service(cluster_arn, service_arn)
+        .await?;
 
-      let last_status = task.last_status().unwrap();
+      let deployment_count = service.deployments().len();
 
-      if last_status == STOPPED_STATUS {
-        let container = task.containers().first().unwrap();
-
-        match container.exit_code().unwrap() {
-          0 => {
-            log::info!("Task was successful");
-            return Ok(task);
-          }
-          _ => {
-            log::error!("Task was failed");
-            return Err(EcsHelperVarietyError::TaskWasFailed {
-              task_arn: task_arn.to_owned(),
-              code: container.exit_code().unwrap(),
-            });
-          }
-        }
+      if deployment_count == 0 {
+        log::info!("Service was deployed");
+        return Ok(service);
       }
 
       timeout -= DEFAULT_STEP;
@@ -128,12 +111,12 @@ impl RunCommandCommand {
   }
 }
 
-impl Command for RunCommandCommand {
+impl Command for DeployCommand {
   fn name(&self) -> String {
-    "run_command".to_string()
+    "deploy".to_string()
   }
 
-  async fn run(&self) -> miette::Result<(), EcsHelperVarietyError> {
+  async fn run(&self) -> Result<(), EcsHelperVarietyError> {
     let cluster =
       cluster_helpers::get_current_cluster(&self.ecs_client, &self.config, &self.cluster).await?;
 
@@ -174,80 +157,31 @@ impl Command for RunCommandCommand {
       )
       .collect::<Vec<_>>();
 
-    let mut new_container_definition = container_definitions_to_ecr
-      .iter()
-      .find(|container_definition| {
-        let container_name = match container_definition.name() {
-          Some(container_name) => container_name,
-          None => return false,
-        };
-
-        match &self.container {
-          Some(container) => container_name.contains(container),
-          None => true,
-        }
-      })
-      .unwrap_or(container_definitions_to_ecr.first().unwrap())
-      .to_owned();
-
-    let container_name = new_container_definition.name().unwrap();
-    let name = match self.name {
-      Some(ref name) => format!("{container_name}-{name}"),
-      None => container_name.to_string(),
-    };
-
-    let new_log_configuration = new_container_definition
-      .log_configuration()
-      .unwrap()
-      .to_owned();
-    let mut new_options = new_log_configuration.options().unwrap().to_owned();
-    let new_log_configuration_prefix = format!(
-      "{}-{name}",
-      new_log_configuration
-        .options()
-        .unwrap()
-        .get("awslogs-stream-prefix")
-        .unwrap()
-    );
-    new_options.insert(
-      "awslogs-stream-prefix".to_string(),
-      new_log_configuration_prefix,
-    );
-
-    new_container_definition.log_configuration = Some(new_log_configuration);
-    new_container_definition.name = Some(name);
-    new_container_definition.command = Some(vec![
-      "bash".to_string(),
-      "-c".to_string(),
-      self.command.clone(),
-    ]);
+    let new_container_definition = container_definitions_to_ecr.first().unwrap();
 
     let new_service_task_definition = self
       .ecs_client
-      .register_task_definition_from(&service_task_definition, &new_container_definition)
+      .register_task_definition_from(&service_task_definition, new_container_definition)
       .await?;
 
-    let task_definition_arn = new_service_task_definition
+    let service_task_definition_arn = new_service_task_definition
       .task_definition_arn()
       .unwrap()
-      .to_string();
-    let network_configuration = service.network_configuration().unwrap().to_owned();
+      .to_owned();
 
-    let task = self
+    let service = self
       .ecs_client
-      .run_task(
-        &cluster,
-        &task_definition_arn,
-        &network_configuration,
-        service.launch_type(),
-      )
+      .update_service(&service_task_definition_arn)
       .await?;
 
-    log::info!("Start task: {}", &task.task_arn().unwrap());
+    log::info!("Update service\nService task definition was updated");
 
-    let task_arn = task.task_arn().unwrap().to_owned();
+    let service_arn = service.service_arn().unwrap().to_owned();
+    let cluster_arn = service.cluster_arn().unwrap().to_owned();
 
-    self.wait_for_task(&task_arn, &cluster).await?;
+    self.wait_for_deploy(&cluster_arn, &service_arn).await?;
+
+    log::info!("Success\nApplication was successfully deployed");
 
     Ok(())
   }

@@ -4,7 +4,6 @@ use ecs_helpers::{
 };
 use regex::Regex;
 
-#[derive(Debug)]
 pub struct ExportImagesCommand {
   config: Config,
 }

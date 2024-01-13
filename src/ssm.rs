@@ -3,7 +3,6 @@ use aws_sdk_ssm::{types::Parameter, Client};
 
 use crate::errors::EcsHelperVarietyError;
 
-#[derive(Debug, Clone)]
 pub struct SSMClient {
   client: Client,
 }

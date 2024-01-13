@@ -5,7 +5,6 @@ use ecs_helpers::{
 use futures::join;
 use tokio::process::Command as TokioCommand;
 
-#[derive(Debug)]
 pub struct BuildAndPushCommand {
   config: Config,
   ecr_client: EcrClient,

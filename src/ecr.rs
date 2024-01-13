@@ -6,7 +6,6 @@ use aws_sdk_ecr::{
 
 use crate::errors::EcsHelperVarietyError;
 
-#[derive(Debug, Clone)]
 pub struct EcrClient {
   client: Client,
 }
