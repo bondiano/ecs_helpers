@@ -12,6 +12,7 @@ Mostly drop-in replacement for [ecs_helper](https://github.com/dualboot-partners
 
 ## The available commands are
 
+- **build_and_push**: builds and pushes the Docker image to Amazon Elastic Container Registry (ECR);
 - **export_images**: exports Docker images to a file.
 - **ecr_login**: logs in to Amazon Elastic Container Registry (ECR).
 - **run_command**: runs a command in a container.

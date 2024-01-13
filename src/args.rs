@@ -23,16 +23,16 @@ pub struct CommandArguments {
   #[clap(short, long, env)]
   pub application: Option<String>,
 
+  /// The AWS account ID
+  #[clap(long, env)]
+  pub aws_account_id: Option<String>,
+
   #[clap(subcommand)]
   pub cmd: Commands,
 }
 
 #[derive(Args, Debug)]
-pub struct LoginCommandArguments {
-  /// The AWS account ID
-  #[clap(long, env)]
-  pub aws_account_id: String,
-}
+pub struct LoginCommandArguments {}
 
 #[derive(Args, Debug)]
 pub struct ExportImagesArguments {}
@@ -71,6 +71,25 @@ pub struct ExportEnvSecretsCommandArguments {
   pub name: Option<Vec<String>>,
 }
 
+#[derive(Args, Debug)]
+pub struct BuildAndPushCommandArguments {
+  /// Set image name, will be used to detect ecr repo where to push image, for example web/nginx/toolbox
+  #[clap(short, long, env)]
+  pub image: String,
+
+  /// Set directory for dockerfile and context
+  #[clap(short, long, env, default_value = "./")]
+  pub directory: String,
+
+  /// Cache image before build
+  #[clap(long, env, default_value = "false")]
+  pub cache: bool,
+
+  /// Pass --build-arg to the build command
+  #[clap(long, env)]
+  pub build_arg: Option<Vec<String>>,
+}
+
 #[derive(Subcommand, Debug)]
 pub enum Commands {
   /// Login to AWS ECR. It assumes that you have already set up your AWS credentials.
@@ -88,4 +107,8 @@ pub enum Commands {
   /// Export environment variables from AWS SSM Parameter Store
   #[clap(alias = "export_env_secrets")]
   ExportEnvSecrets(ExportEnvSecretsCommandArguments),
+
+  /// Build and push docker image to ECR
+  #[clap(alias = "build_and_push")]
+  BuildAndPush(BuildAndPushCommandArguments),
 }

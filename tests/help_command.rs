@@ -62,3 +62,14 @@ fn test_export_env_secrets_help() {
     .success()
     .stderr("");
 }
+
+#[test]
+fn test_build_and_push_help() {
+  assert_cmd::Command::cargo_bin("ecs_helpers")
+    .unwrap()
+    .arg("build_and_push")
+    .arg("--help")
+    .assert()
+    .success()
+    .stderr("");
+}

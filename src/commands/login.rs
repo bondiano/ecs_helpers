@@ -4,16 +4,12 @@ use ecs_helpers::{
 
 #[derive(Debug)]
 pub struct LoginCommand {
-  aws_account_id: String,
   config: Config,
 }
 
 impl LoginCommand {
-  pub fn new(config: Config, arguments: LoginCommandArguments) -> Self {
-    Self {
-      config,
-      aws_account_id: arguments.aws_account_id,
-    }
+  pub fn new(config: Config, _: LoginCommandArguments) -> Self {
+    Self { config }
   }
 }
 
@@ -23,10 +19,14 @@ impl Command for LoginCommand {
   }
 
   async fn run(&self) -> miette::Result<(), EcsHelperVarietyError> {
-    let sdk_config = &self.config.sdk_config;
-    let region = &self.config.region;
+    let Config {
+      sdk_config,
+      region,
+      aws_account_id,
+      ..
+    } = &self.config;
 
-    let auth_output = auth::login_to_ecr(sdk_config, region, &self.aws_account_id).await?;
+    let auth_output = auth::login_to_ecr(sdk_config, region, aws_account_id).await?;
 
     if auth_output.status.success() {
       Ok(())

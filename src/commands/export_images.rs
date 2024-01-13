@@ -21,10 +21,13 @@ impl Command for ExportImagesCommand {
   }
 
   async fn run(&self) -> miette::Result<(), EcsHelperVarietyError> {
-    let version = &self.config.version;
-    let project = &self.config.project;
-    let application = &self.config.application;
-    let sdk_config = &self.config.sdk_config;
+    let Config {
+      version,
+      project,
+      application,
+      sdk_config,
+      ..
+    } = &self.config;
 
     let ecr_client = EcrClient::new(sdk_config);
 

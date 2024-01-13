@@ -12,6 +12,7 @@ pub struct Config {
   pub application: String,
   pub region: Region,
   pub sdk_config: SdkConfig,
+  pub aws_account_id: String,
 }
 
 impl Config {
@@ -25,7 +26,10 @@ impl Config {
       commit_sha,
       &environment,
     ));
+    // TODO: add aws_account_id detection and errors
+    let aws_account_id = args.aws_account_id.to_owned().unwrap_or("".to_string());
     let project = args.project.to_owned();
+    // TODO: add application detection and errors
     let application = args.application.to_owned().unwrap_or("".to_string());
     let region = sdk_config
       .region()
@@ -39,6 +43,7 @@ impl Config {
       version,
       environment,
       project,
+      aws_account_id,
     })
   }
 

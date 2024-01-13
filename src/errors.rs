@@ -145,4 +145,20 @@ pub enum EcsHelperVarietyError {
   #[error("No ENV secrets to export. Please pass ENV variables names using -n")]
   #[diagnostic(code(ecs_helper::ssm::no_env_variables_to_export))]
   NoEnvVariablesToExport,
+
+  #[error("Can't detect ECR repository")]
+  #[diagnostic(code(ecs_helper::ecr::repository_not_found))]
+  NoRepositoryFound,
+
+  #[error("Failed to pull image:\n{0}")]
+  #[diagnostic(code(ecs_helper::docker::pull_image_error))]
+  PullImageError(String),
+
+  #[error("Failed to build image:\n{0}")]
+  #[diagnostic(code(ecs_helper::docker::build_image_error))]
+  BuildImageError(String),
+
+  #[error("Failed to push image:\n{0}")]
+  #[diagnostic(code(ecs_helper::docker::push_image_error))]
+  PushImageError(String),
 }

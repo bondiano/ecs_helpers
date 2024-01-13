@@ -1,5 +1,5 @@
 use clap::Parser;
-use commands::ExportEnvSecretsCommand;
+use commands::{BuildAndPushCommand, ExportEnvSecretsCommand};
 use ecs_helpers::{
   args::{CommandArguments, Commands},
   command::run_command,
@@ -38,6 +38,11 @@ async fn main() -> miette::Result<()> {
       let export_env_secrets_command = ExportEnvSecretsCommand::new(config, options);
 
       run_command(export_env_secrets_command).await
+    }
+    Commands::BuildAndPush(options) => {
+      let build_and_push_command = BuildAndPushCommand::new(config, options);
+
+      run_command(build_and_push_command).await
     }
   }
 }

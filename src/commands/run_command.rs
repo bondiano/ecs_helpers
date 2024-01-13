@@ -156,23 +156,16 @@ impl RunCommandCommand {
     let ecs_client = EcsClient::new(sdk_config);
     let ecr_client = EcrClient::new(sdk_config);
 
-    let command = options.command;
-    let timeout = options.timeout;
-    let cluster = options.cluster;
-    let service = options.service;
-    let name = options.name;
-    let container = options.container;
-
     Self {
       ecs_client,
       ecr_client,
       config,
-      timeout,
-      cluster,
-      service,
-      command,
-      name,
-      container,
+      name: options.name,
+      timeout: options.timeout,
+      cluster: options.cluster,
+      service: options.service,
+      command: options.command,
+      container: options.container,
     }
   }
 
