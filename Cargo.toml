@@ -16,16 +16,20 @@ aws-sdk-ecr = "1.9.0"
 aws-sdk-ecrpublic = "1.9.0"
 aws-sdk-ecs = "1.9.0"
 aws-sdk-ssm = "1.9.0"
+aws-smithy-runtime = { version = "1.1.2", features = ["test-util"] }
+aws-smithy-types = { version = "1.1.2", features = ["test-util"] }
+aws-smithy-runtime-api = { version = "1.1.2", features = ["test-util"] }
 base64 = "0.21.5"
 clap = { version = "4.4.12", features = ["derive", "env"] }
-env_logger = "0.10.1"
 futures = "0.3.30"
 git2 = "0.18.1"
+http = "0.2.9"
 log = "0.4.20"
 miette = { version = "5.10.0", features = ["fancy"] }
 regex = "1.10.2"
 thiserror = "1.0.56"
 tokio = { version = "1", features = ["full"] }
+tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
 
 [dev-dependencies]
 assert_cmd = "2.0.12"

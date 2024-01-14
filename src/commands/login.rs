@@ -28,6 +28,8 @@ impl Command for LoginCommand {
     let auth_output = auth::login_to_ecr(sdk_config, region, aws_account_id).await?;
 
     if auth_output.status.success() {
+      log::info!("Login succeeded!");
+
       Ok(())
     } else {
       Err(EcsHelperVarietyError::LoginFailed(

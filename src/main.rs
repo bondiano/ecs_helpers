@@ -5,7 +5,6 @@ use ecs_helpers::{
   command::run_command,
   config::Config,
 };
-use env_logger::Env;
 
 use crate::commands::{ExportImagesCommand, LoginCommand, RunCommandCommand};
 
@@ -13,7 +12,7 @@ mod commands;
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
-  env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+  tracing_subscriber::fmt::init();
 
   let args = CommandArguments::parse();
   let config = Config::new(&args).await?;

@@ -169,7 +169,7 @@ impl EcsClient {
     cluster_arn: &String,
     task_definition_arn: &String,
     network_configuration: &NetworkConfiguration,
-    launch_type: Option<&LaunchType>,
+    launch_type: Option<&'_ LaunchType>,
   ) -> miette::Result<Task, EcsHelperVarietyError> {
     let mut run_task_builder = self
       .client
@@ -211,5 +211,54 @@ impl EcsClient {
       .ok_or(EcsHelperVarietyError::ExtractServiceError)?;
 
     Ok(service.to_owned())
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use aws_config::{BehaviorVersion, Region};
+  use aws_sdk_ecr::config::{SharedCredentialsProvider, Credentials};
+  use aws_smithy_runtime::client::http::test_util::{ReplayEvent, StaticReplayClient};
+  use aws_smithy_runtime_api::client::orchestrator::HttpRequest;
+  use aws_smithy_types::body::SdkBody;
+
+  #[tokio::test]
+  async fn get_clusters() {
+    let request = HttpRequest::new(SdkBody::from(""));
+
+    let response = http::Response::builder()
+      .status(200)
+      .body(SdkBody::from("
+        {
+          \"clusterArns\": [
+            \"arn:aws:ecs:us-east-1:123456789012:cluster/default\"
+          ]
+        }
+      "))
+      .unwrap();
+    let page = ReplayEvent::new(request, response);
+
+    let http_client = StaticReplayClient::new(vec![page]);
+
+    let credentials = SharedCredentialsProvider::new(
+      Credentials::for_tests_with_session_token(),
+    );
+
+    let sdk_config = SdkConfig::builder()
+      .region(Region::new("us-east-1"))
+      .behavior_version(BehaviorVersion::latest())
+      .credentials_provider(credentials)
+      .http_client(http_client)
+      .build();
+    let ecs_client = EcsClient::new(&sdk_config);
+
+    let clusters = ecs_client.get_clusters().await.unwrap();
+
+    assert_eq!(clusters.len(), 1);
+    assert_eq!(
+      clusters.first().unwrap(),
+      "arn:aws:ecs:us-east-1:123456789012:cluster/default"
+    );
   }
 }
