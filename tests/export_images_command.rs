@@ -4,6 +4,8 @@ fn test_export_images_command_without_environment() {
     .unwrap()
     .arg("--project")
     .arg("test")
+    .arg("--application")
+    .arg("test")
     .arg("export_images")
     .assert()
     .failure();

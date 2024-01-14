@@ -25,11 +25,14 @@ impl Config {
       commit_sha,
       &environment,
     ));
-    // TODO: add aws_account_id detection and errors
-    let aws_account_id = args.aws_account_id.to_owned().unwrap_or("".to_string());
+    let aws_account_id = args.aws_account_id.to_owned().unwrap_or_else(|| {
+      // TODO: needs to do the same as:
+      // aws sts get-caller-identity --query "Account" --output text
+      log::warn!("No AWS account ID provided, using empty string");
+      "".to_string()
+    });
     let project = args.project.to_owned();
-    // TODO: add application detection and errors
-    let application = args.application.to_owned().unwrap_or("".to_string());
+    let application = args.application.to_owned();
     let region = sdk_config
       .region()
       .unwrap_or(&Region::new(DEFAULT_REGION))
@@ -102,5 +105,96 @@ impl Config {
       Some(environment) => Ok(environment.clone()),
       None => Config::extract_environment_from_branch_name(),
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use git2::{Repository, RepositoryInitOptions};
+  use sealed_test::prelude::*;
+
+  #[test]
+  fn test_extract_version() {
+    let commit_sha = "1234567890".to_string();
+    let environment = "production".to_string();
+
+    let version = Config::extract_version(false, commit_sha.clone(), &environment);
+    assert_eq!(version, commit_sha);
+
+    let version = Config::extract_version(true, commit_sha.clone(), &environment);
+    assert_eq!(version, format!("{}-{}", environment, commit_sha));
+  }
+
+  #[sealed_test]
+  fn test_extract_commit_sha() {
+    let expected_commit_sha = "1234567890";
+    std::env::set_var("CI_COMMIT_SHA", expected_commit_sha);
+
+    let commit_sha = Config::extract_commit_sha().unwrap();
+    assert_eq!(commit_sha, expected_commit_sha);
+  }
+
+  #[sealed_test]
+  fn test_extract_environment_from_branch_name() {
+    let mut opts = RepositoryInitOptions::new();
+    opts.initial_head("main");
+    let repo = Repository::init_opts(".", &opts).unwrap();
+    {
+      let mut config = repo.config().unwrap();
+      config.set_str("user.name", "name").unwrap();
+      config.set_str("user.email", "email").unwrap();
+      let mut index = repo.index().unwrap();
+      let id = index.write_tree().unwrap();
+
+      let tree = repo.find_tree(id).unwrap();
+      let sig = repo.signature().unwrap();
+      repo
+        .commit(Some("HEAD"), &sig, &sig, "initial\n\nbody", &tree, &[])
+        .unwrap();
+    }
+
+    let environment = Config::extract_environment_from_branch_name().unwrap();
+    assert_eq!(environment, "production");
+
+    repo
+      .branch("qa", &repo.head().unwrap().peel_to_commit().unwrap(), false)
+      .unwrap();
+    repo.set_head("refs/heads/qa").unwrap();
+    let environment = Config::extract_environment_from_branch_name().unwrap();
+    assert_eq!(environment, "qa");
+
+    repo
+      .branch(
+        "uat",
+        &repo.head().unwrap().peel_to_commit().unwrap(),
+        false,
+      )
+      .unwrap();
+    repo.set_head("refs/heads/uat").unwrap();
+    let environment = Config::extract_environment_from_branch_name().unwrap();
+    assert_eq!(environment, "uat");
+
+    repo
+      .branch(
+        "staging",
+        &repo.head().unwrap().peel_to_commit().unwrap(),
+        false,
+      )
+      .unwrap();
+    repo.set_head("refs/heads/staging").unwrap();
+    let environment = Config::extract_environment_from_branch_name().unwrap();
+    assert_eq!(environment, "staging");
+
+    repo
+      .branch(
+        "demo",
+        &repo.head().unwrap().peel_to_commit().unwrap(),
+        false,
+      )
+      .unwrap();
+    repo.set_head("refs/heads/demo").unwrap();
+    let environment = Config::extract_environment_from_branch_name().unwrap();
+    assert_eq!(environment, "demo");
   }
 }

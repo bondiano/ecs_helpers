@@ -4,6 +4,8 @@ fn test_ecs_login_command_without_environment() {
     .unwrap()
     .arg("--project")
     .arg("test")
+    .arg("--application")
+    .arg("test")
     .arg("--aws-account-id")
     .arg("123456789012")
     .arg("ecs_login")

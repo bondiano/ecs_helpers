@@ -6,6 +6,8 @@ fn test_deploy_command_without_environment() {
     .arg("test")
     .arg("--environment")
     .arg("test")
+    .arg("--application")
+    .arg("test")
     .arg("deploy")
     .arg("--timeout")
     .arg("1")

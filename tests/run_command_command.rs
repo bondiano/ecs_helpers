@@ -4,6 +4,8 @@ fn test_run_command_command_without_environment() {
     .unwrap()
     .arg("--project")
     .arg("test")
+    .arg("--application")
+    .arg("test")
     .arg("--environment")
     .arg("test")
     .arg("run_command")

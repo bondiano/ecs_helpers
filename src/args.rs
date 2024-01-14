@@ -21,7 +21,7 @@ pub struct CommandArguments {
 
   /// Set application name, will be used to detect service and task definition
   #[clap(short, long, env)]
-  pub application: Option<String>,
+  pub application: String,
 
   /// The AWS account ID
   #[clap(long, env)]
