@@ -218,7 +218,7 @@ impl EcsClient {
 mod tests {
   use super::*;
   use aws_config::{BehaviorVersion, Region};
-  use aws_sdk_ecr::config::{SharedCredentialsProvider, Credentials};
+  use aws_sdk_ecr::config::{Credentials, SharedCredentialsProvider};
   use aws_smithy_runtime::client::http::test_util::{ReplayEvent, StaticReplayClient};
   use aws_smithy_runtime_api::client::orchestrator::HttpRequest;
   use aws_smithy_types::body::SdkBody;
@@ -229,21 +229,21 @@ mod tests {
 
     let response = http::Response::builder()
       .status(200)
-      .body(SdkBody::from("
+      .body(SdkBody::from(
+        "
         {
           \"clusterArns\": [
             \"arn:aws:ecs:us-east-1:123456789012:cluster/default\"
           ]
         }
-      "))
+      ",
+      ))
       .unwrap();
     let page = ReplayEvent::new(request, response);
 
     let http_client = StaticReplayClient::new(vec![page]);
 
-    let credentials = SharedCredentialsProvider::new(
-      Credentials::for_tests_with_session_token(),
-    );
+    let credentials = SharedCredentialsProvider::new(Credentials::for_tests_with_session_token());
 
     let sdk_config = SdkConfig::builder()
       .region(Region::new("us-east-1"))

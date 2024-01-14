@@ -39,7 +39,7 @@ pub async fn login_to_ecr(
   region: &Region,
   account_id: &String,
 ) -> miette::Result<Output, EcsHelperVarietyError> {
-  let ecr_client = EcrClient::new(&sdk_config);
+  let ecr_client = EcrClient::new(sdk_config);
   let token = ecr_client.get_token().await?;
 
   run_docker_login(account_id, region, &token).await
