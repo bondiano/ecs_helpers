@@ -148,8 +148,12 @@ impl EcsClient {
       request = request.cpu(cpu.to_owned());
     }
 
-    if let Some(compatibility) = task_definition.compatibilities().first() {
-      request = request.requires_compatibilities(compatibility.to_owned());
+    if let Some(requires_compatibilities) = task_definition.requires_compatibilities().first() {
+      request = request.requires_compatibilities(requires_compatibilities.to_owned());
+    }
+
+    if let Some(role_arn) = task_definition.task_role_arn() {
+      request = request.task_role_arn(role_arn.to_owned());
     }
 
     let response = request
@@ -196,12 +200,16 @@ impl EcsClient {
 
   pub async fn update_service(
     &self,
+    cluster_arn: &String,
     task_definition_arn: &String,
+    service_arn: &String,
   ) -> miette::Result<Service, EcsHelperVarietyError> {
     let response = self
       .client
       .update_service()
       .task_definition(task_definition_arn)
+      .service(service_arn)
+      .cluster(cluster_arn)
       .send()
       .await
       .map_err(EcsHelperVarietyError::UpdateServiceError)?;

@@ -2,9 +2,14 @@
 name = "ecs_helpers"
 description = "A tool for managing the deployment process of an application in Amazon Elastic Container Service (ECS)"
 authors = ["Vasiliy Kuzenkove <batbondik0@gmail.com>"]
+keywords = ["AWS", "cli", "ECS"]
 version = "0.0.1"
 edition = "2021"
 rust-version = "1.75.0"
+
+[[bin]]
+name = "ecs_helpers"
+path = "src/main.rs"
 
 [profile.release]
 strip = true  # Automatically strip symbols from the binary.
@@ -30,6 +35,7 @@ regex = "1.10.2"
 thiserror = "1.0.56"
 tokio = { version = "1", features = ["full"] }
 tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
+aws-sdk-sts = "1.10.0"
 
 [dev-dependencies]
 assert_cmd = "2.0.12"

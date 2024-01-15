@@ -140,6 +140,8 @@ impl BuildAndPushCommand {
     let mut push_version_command = TokioCommand::new("docker");
     push_version_command.arg("push").arg(&version_tag);
 
+    log::info!("Pushing with two tags: {} & {}", latest_tag, version_tag);
+
     // parallel run
     let (latest_result, version_result) = join!(
       async {

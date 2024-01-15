@@ -98,7 +98,7 @@ impl DeployCommand {
 
       let deployment_count = service.deployments().len();
 
-      if deployment_count == 0 {
+      if deployment_count == 1 {
         log::info!("Service was deployed");
         return Ok(service);
       }
@@ -119,7 +119,6 @@ impl Command for DeployCommand {
   async fn run(&self) -> Result<(), EcsHelperVarietyError> {
     let cluster =
       cluster_helpers::get_current_cluster(&self.ecs_client, &self.config, &self.cluster).await?;
-
     let service =
       service_helpers::get_current_service(&self.ecs_client, &self.config, &cluster, &self.service)
         .await?;
@@ -164,14 +163,18 @@ impl Command for DeployCommand {
       .register_task_definition_from(&service_task_definition, new_container_definition)
       .await?;
 
+    log::info!("Register task definition\nTask definition was registered",);
+
     let service_task_definition_arn = new_service_task_definition
       .task_definition_arn()
       .unwrap()
       .to_owned();
+    let service_arn = service.service_arn().unwrap().to_owned();
+    let cluster_arn = service.cluster_arn().unwrap().to_owned();
 
     let service = self
       .ecs_client
-      .update_service(&service_task_definition_arn)
+      .update_service(&cluster_arn, &service_task_definition_arn, &service_arn)
       .await?;
 
     log::info!("Update service\nService task definition was updated");

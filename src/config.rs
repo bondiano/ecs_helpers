@@ -25,12 +25,10 @@ impl Config {
       commit_sha,
       &environment,
     ));
-    let aws_account_id = args.aws_account_id.to_owned().unwrap_or_else(|| {
-      // TODO: needs to do the same as:
-      // aws sts get-caller-identity --query "Account" --output text
-      log::warn!("No AWS account ID provided, using empty string");
-      "".to_string()
-    });
+    let aws_account_id = args
+      .aws_account_id
+      .to_owned()
+      .unwrap_or(Config::extract_aws_account_id(&sdk_config).await);
     let project = args.project.to_owned();
     let application = args.application.to_owned();
     let region = sdk_config
@@ -47,6 +45,24 @@ impl Config {
       project,
       aws_account_id,
     })
+  }
+
+  async fn extract_aws_account_id(sdk_config: &SdkConfig) -> String {
+    let sts_client = aws_sdk_sts::Client::new(sdk_config);
+    let account_id = sts_client
+      .get_caller_identity()
+      .send()
+      .await
+      .unwrap()
+      .user_id;
+
+    match account_id {
+      Some(account_id) => account_id,
+      None => {
+        log::warn!("No AWS account ID provided, using empty string");
+        "".to_string()
+      }
+    }
   }
 
   fn extract_version(
