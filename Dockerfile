@@ -19,6 +19,4 @@ RUN cargo build --release
 FROM --platform=$BUILDPLATFORM docker:24.0.7-cli-alpine3.19
 WORKDIR /app
 
-COPY --from=builder /ecs_helpers/target/release/ecs_helpers /
-
-RUN alias ecs_helper="/ecs_helpers"
+COPY --from=builder /ecs_helpers/target/release/ecs_helpers /usr/local/bin/ecs_helpers
