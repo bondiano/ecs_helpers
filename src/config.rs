@@ -52,7 +52,7 @@ impl Config {
     let caller_identity = sts_client.get_caller_identity().send().await;
 
     let account_id = match caller_identity {
-      Ok(caller_identity) => caller_identity.user_id,
+      Ok(caller_identity) => caller_identity.account,
       Err(_) => {
         log::warn!("Unable to get AWS account ID, using empty string");
         return "".to_string();

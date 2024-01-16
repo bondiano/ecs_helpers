@@ -186,12 +186,10 @@ impl Command for BuildAndPushCommand {
     let auth_output = auth::login_to_ecr(sdk_config, region, aws_account_id).await?;
 
     if !auth_output.status.success() {
-      return Err(EcsHelperVarietyError::LoginFailed(
-        String::from_utf8(auth_output.stdout).unwrap_or(format!(
-          "Login failed with status code: {}",
-          auth_output.status.code().unwrap_or(0)
-        )),
-      ));
+      return Err(EcsHelperVarietyError::LoginFailed(format!(
+        "Login failed with status code: {}",
+        auth_output.status.code().unwrap_or(0)
+      )));
     }
 
     if self.should_cache {
