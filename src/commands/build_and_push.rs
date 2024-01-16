@@ -2,7 +2,7 @@ use ecs_helpers::{
   args::BuildAndPushCommandArguments, auth, config::Config, ecr::EcrClient,
   errors::EcsHelperVarietyError, Command,
 };
-use futures::join;
+use futures::try_join;
 use tokio::process::Command as TokioCommand;
 
 pub struct BuildAndPushCommand {
@@ -142,8 +142,7 @@ impl BuildAndPushCommand {
 
     log::info!("Pushing with two tags: {} & {}", latest_tag, version_tag);
 
-    // parallel run
-    let (latest_result, version_result) = join!(
+    try_join!(
       async {
         let push_latest_output = push_latest_command.output().await?;
         if !push_latest_output.status.success() {
@@ -164,10 +163,7 @@ impl BuildAndPushCommand {
         }
         Ok(())
       }
-    );
-
-    latest_result?;
-    version_result?;
+    )?;
 
     Ok(())
   }

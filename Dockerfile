@@ -1,7 +1,7 @@
-FROM lukemathwalker/cargo-chef:latest-rust-1.75.0-alpine as chef
+FROM  lukemathwalker/cargo-chef:latest-rust-1.75.0-alpine as chef
 WORKDIR /ecs_helpers
 
-FROM chef AS planner
+FROM --platform=$BUILDPLATFORM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
@@ -16,9 +16,9 @@ COPY . .
 
 RUN cargo build --release
 
-FROM docker:24.0.7-cli-alpine3.19
+FROM --platform=$BUILDPLATFORM docker:24.0.7-cli-alpine3.19
 WORKDIR /app
 
 COPY --from=builder /ecs_helpers/target/release/ecs_helpers /
 
-ENTRYPOINT ["/ecs_helpers"]
+RUN alias ecs_helper="/ecs_helpers"

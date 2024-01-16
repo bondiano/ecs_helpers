@@ -5,5 +5,3 @@ RUN apk add --no-cache \
     git \
     aws-cli \
   && rm -rf /var/cache/apk/*
-
-RUN alias ecs_helper="/ecs_helpers"
