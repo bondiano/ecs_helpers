@@ -95,14 +95,17 @@ impl Config {
   }
 
   fn extract_environment_from_branch_name() -> miette::Result<String, EcsHelperVarietyError> {
-    let repo = Repository::open(".").map_err(|_| EcsHelperVarietyError::ExtractEnvironmentError)?;
+    let repo = Repository::open(".")
+      .map_err(|err| EcsHelperVarietyError::ExtractEnvironmentError(err.to_string()))?;
 
     let branch = repo
       .head()
-      .map_err(|_| EcsHelperVarietyError::ExtractEnvironmentError)?;
+      .map_err(|err| EcsHelperVarietyError::ExtractEnvironmentError(err.to_string()))?;
     let branch = branch
       .shorthand()
-      .ok_or(EcsHelperVarietyError::ExtractEnvironmentError)?;
+      .ok_or(EcsHelperVarietyError::ExtractEnvironmentError(
+        "Could not extract branch name.".to_string(),
+      ))?;
 
     let environment = match branch {
       "master" => "production",
@@ -111,7 +114,9 @@ impl Config {
       "uat" => "uat",
       "staging" => "staging",
       "demo" => "demo",
-      _ => Err(EcsHelperVarietyError::ExtractEnvironmentError)?,
+      _ => Err(EcsHelperVarietyError::ExtractEnvironmentError(format!(
+        "Could not match branch name {branch} with environment."
+      )))?,
     };
 
     Ok(environment.to_string())

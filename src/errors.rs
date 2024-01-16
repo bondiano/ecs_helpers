@@ -22,9 +22,9 @@ pub enum EcsHelperVarietyError {
   #[diagnostic(code(ecs_helper::config::extract_commit_sha_error))]
   ExtractCommitShaError,
 
-  #[error("Failed to extract environment")]
+  #[error("Failed to extract environment:\n{0}")]
   #[diagnostic(code(ecs_helper::config::extract_environment_error))]
-  ExtractEnvironmentError,
+  ExtractEnvironmentError(String),
 
   #[error(transparent)]
   #[diagnostic(code(ecs_helper::write::io_error))]
