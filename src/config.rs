@@ -49,12 +49,15 @@ impl Config {
 
   async fn extract_aws_account_id(sdk_config: &SdkConfig) -> String {
     let sts_client = aws_sdk_sts::Client::new(sdk_config);
-    let account_id = sts_client
-      .get_caller_identity()
-      .send()
-      .await
-      .unwrap()
-      .user_id;
+    let caller_identity = sts_client.get_caller_identity().send().await;
+
+    let account_id = match caller_identity {
+      Ok(caller_identity) => caller_identity.user_id,
+      Err(_) => {
+        log::warn!("Unable to get AWS account ID, using empty string");
+        return "".to_string();
+      }
+    };
 
     match account_id {
       Some(account_id) => account_id,
