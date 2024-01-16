@@ -84,11 +84,12 @@ impl Config {
     if let Ok(commit_sha) = std::env::var("CI_COMMIT_SHA") {
       Ok(commit_sha)
     } else {
-      let repo = Repository::open(".").map_err(|_| EcsHelperVarietyError::ExtractCommitShaError)?;
+      let repo = Repository::open(".")
+        .map_err(|err| EcsHelperVarietyError::ExtractCommitShaError(err.to_string()))?;
 
       let rev_spec = repo
         .revparse_single("HEAD")
-        .map_err(|_| EcsHelperVarietyError::ExtractCommitShaError)?;
+        .map_err(|err| EcsHelperVarietyError::ExtractCommitShaError(err.to_string()))?;
 
       Ok(rev_spec.id().to_string())
     }

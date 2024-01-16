@@ -187,7 +187,10 @@ impl Command for BuildAndPushCommand {
 
     if !auth_output.status.success() {
       return Err(EcsHelperVarietyError::LoginFailed(
-        auth_output.status.to_string(),
+        String::from_utf8(auth_output.stdout).unwrap_or(format!(
+          "Login failed with status code: {}",
+          auth_output.status.code().unwrap_or(0)
+        )),
       ));
     }
 

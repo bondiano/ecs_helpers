@@ -20,7 +20,7 @@ use thiserror::Error;
 pub enum EcsHelperVarietyError {
   #[error("Failed to extract commit sha")]
   #[diagnostic(code(ecs_helper::config::extract_commit_sha_error))]
-  ExtractCommitShaError,
+  ExtractCommitShaError(String),
 
   #[error("Failed to extract environment:\n{0}")]
   #[diagnostic(code(ecs_helper::config::extract_environment_error))]
@@ -54,7 +54,7 @@ pub enum EcsHelperVarietyError {
   #[diagnostic(code(ecs_helper::auth::parse_token_from_utf8_error))]
   ParseTokenFromUtf8Error(#[from] std::string::FromUtf8Error),
 
-  #[error("Login command was failed\nWith status: {0}")]
+  #[error("Login command was failed\n{0}")]
   #[diagnostic(code(ecs_helper::login::login_failed))]
   LoginFailed(String),
 
