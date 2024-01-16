@@ -9,10 +9,10 @@ fn test_help() {
 }
 
 #[test]
-fn test_ecs_login_help() {
+fn test_ecr_login_help() {
   assert_cmd::Command::cargo_bin("ecs_helpers")
     .unwrap()
-    .arg("ecs_login")
+    .arg("ecr_login")
     .arg("--help")
     .assert()
     .success()

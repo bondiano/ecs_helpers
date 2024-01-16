@@ -108,7 +108,7 @@ pub struct BuildAndPushCommandArguments {
 #[derive(Subcommand)]
 pub enum Commands {
   /// Login to AWS ECR. It assumes that you have already set up your AWS credentials.
-  #[clap(alias = "ecs_login")]
+  #[clap(alias = "ecr_login")]
   Login(LoginCommandArguments),
 
   /// Prints images for the project and application

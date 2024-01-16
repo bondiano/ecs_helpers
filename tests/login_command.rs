@@ -1,5 +1,5 @@
 #[test]
-fn test_ecs_login_command_without_environment() {
+fn test_ecr_login_command_without_environment() {
   assert_cmd::Command::cargo_bin("ecs_helpers")
     .unwrap()
     .arg("--project")
@@ -8,6 +8,6 @@ fn test_ecs_login_command_without_environment() {
     .arg("test")
     .arg("--aws-account-id")
     .arg("123456789012")
-    .arg("ecs_login")
+    .arg("ecr_login")
     .assert();
 }
