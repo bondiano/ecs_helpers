@@ -121,13 +121,7 @@ impl Config {
       "master" => "production",
       "main" => "production",
       "develop" => "development",
-      "qa" => "qa",
-      "uat" => "uat",
-      "staging" => "staging",
-      "demo" => "demo",
-      _ => Err(EcsHelperVarietyError::ExtractEnvironmentError(format!(
-        "Could not match branch name {branch} with environment."
-      )))?,
+      default => default,
     };
 
     Ok(environment.to_string())
