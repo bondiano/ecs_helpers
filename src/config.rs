@@ -103,9 +103,15 @@ impl Config {
       .head()
       .map_err(|err| EcsHelperVarietyError::ExtractEnvironmentError(err.to_string()))?;
     let branch = branch
-      .shorthand()
+      .name()
       .ok_or(EcsHelperVarietyError::ExtractEnvironmentError(
         "Could not extract branch name.".to_string(),
+      ))?;
+    let branch = branch
+      .split('/')
+      .last()
+      .ok_or(EcsHelperVarietyError::ExtractEnvironmentError(
+        format!("Could not extract branch name from {branch}.")
       ))?;
 
     let environment = match branch {
