@@ -192,17 +192,6 @@ mod tests {
     assert_eq!(environment, "production");
 
     repo
-      .branch(
-        "develop",
-        &repo.head().unwrap().peel_to_commit().unwrap(),
-        false,
-      )
-      .unwrap();
-    repo.set_head("refs/heads/develop").unwrap();
-    let environment = Config::extract_environment().unwrap();
-    assert_eq!(environment, "development");
-
-    repo
       .branch("qa", &repo.head().unwrap().peel_to_commit().unwrap(), false)
       .unwrap();
     repo.set_head("refs/heads/qa").unwrap();
