@@ -120,8 +120,13 @@ impl Config {
     let environment = match branch.as_str() {
       "master" => "production",
       "main" => "production",
-      "develop" => "development",
-      default => default,
+      "qa" => "qa",
+      "uat" => "uat",
+      "staging" => "staging",
+      "demo" => "demo",
+      _ => Err(EcsHelperVarietyError::ExtractEnvironmentError(format!(
+        "Could not match branch name {branch} with environment."
+      )))?,
     };
 
     Ok(environment.to_string())
