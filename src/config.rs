@@ -19,7 +19,10 @@ impl Config {
     let sdk_config = aws_config::load_from_env().await;
 
     let commit_sha = Config::extract_commit_sha()?;
-    let environment = Config::extract_environment(&args.environment)?;
+    let environment = args
+      .environment
+      .to_owned()
+      .unwrap_or(Config::extract_environment()?);
     let version = args.version.to_owned().unwrap_or(Config::extract_version(
       args.use_image_tag_env_prefix,
       commit_sha,
@@ -95,7 +98,7 @@ impl Config {
     }
   }
 
-  fn extract_environment_from_branch_name() -> miette::Result<String, EcsHelperVarietyError> {
+  fn extract_branch_name() -> miette::Result<String, EcsHelperVarietyError> {
     let repo = Repository::open(".")
       .map_err(|err| EcsHelperVarietyError::ExtractEnvironmentError(err.to_string()))?;
 
@@ -103,18 +106,19 @@ impl Config {
       .head()
       .map_err(|err| EcsHelperVarietyError::ExtractEnvironmentError(err.to_string()))?;
     let branch = branch
-      .name()
+      .shorthand()
       .ok_or(EcsHelperVarietyError::ExtractEnvironmentError(
         "Could not extract branch name.".to_string(),
       ))?;
-    let branch = branch
-      .split('/')
-      .last()
-      .ok_or(EcsHelperVarietyError::ExtractEnvironmentError(format!(
-        "Could not extract branch name from {branch}."
-      )))?;
 
-    let environment = match branch {
+    Ok(branch.to_string())
+  }
+
+  fn extract_environment() -> miette::Result<String, EcsHelperVarietyError> {
+    let branch = std::env::var("CI_COMMIT_BRANCH").or_else(|_| Config::extract_branch_name())?;
+    dbg!(&branch);
+
+    let environment = match branch.as_str() {
       "master" => "production",
       "main" => "production",
       "qa" => "qa",
@@ -127,15 +131,6 @@ impl Config {
     };
 
     Ok(environment.to_string())
-  }
-
-  fn extract_environment(
-    environment: &Option<String>,
-  ) -> miette::Result<String, EcsHelperVarietyError> {
-    match environment {
-      Some(environment) => Ok(environment.clone()),
-      None => Config::extract_environment_from_branch_name(),
-    }
   }
 }
 
@@ -167,10 +162,19 @@ mod tests {
   }
 
   #[sealed_test]
+  fn test_extract_environment_from_env() {
+    std::env::set_var("CI_COMMIT_BRANCH", "master");
+
+    let environment = Config::extract_environment().unwrap();
+    assert_eq!(environment, "production");
+  }
+
+  #[sealed_test]
   fn test_extract_environment_from_branch_name() {
     let mut opts = RepositoryInitOptions::new();
     opts.initial_head("main");
     let repo = Repository::init_opts(".", &opts).unwrap();
+
     {
       let mut config = repo.config().unwrap();
       config.set_str("user.name", "name").unwrap();
@@ -185,14 +189,14 @@ mod tests {
         .unwrap();
     }
 
-    let environment = Config::extract_environment_from_branch_name().unwrap();
+    let environment = Config::extract_environment().unwrap();
     assert_eq!(environment, "production");
 
     repo
       .branch("qa", &repo.head().unwrap().peel_to_commit().unwrap(), false)
       .unwrap();
     repo.set_head("refs/heads/qa").unwrap();
-    let environment = Config::extract_environment_from_branch_name().unwrap();
+    let environment = Config::extract_environment().unwrap();
     assert_eq!(environment, "qa");
 
     repo
@@ -203,7 +207,7 @@ mod tests {
       )
       .unwrap();
     repo.set_head("refs/heads/uat").unwrap();
-    let environment = Config::extract_environment_from_branch_name().unwrap();
+    let environment = Config::extract_environment().unwrap();
     assert_eq!(environment, "uat");
 
     repo
@@ -214,7 +218,7 @@ mod tests {
       )
       .unwrap();
     repo.set_head("refs/heads/staging").unwrap();
-    let environment = Config::extract_environment_from_branch_name().unwrap();
+    let environment = Config::extract_environment().unwrap();
     assert_eq!(environment, "staging");
 
     repo
@@ -225,7 +229,7 @@ mod tests {
       )
       .unwrap();
     repo.set_head("refs/heads/demo").unwrap();
-    let environment = Config::extract_environment_from_branch_name().unwrap();
+    let environment = Config::extract_environment().unwrap();
     assert_eq!(environment, "demo");
   }
 }
