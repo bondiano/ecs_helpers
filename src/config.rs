@@ -110,9 +110,9 @@ impl Config {
     let branch = branch
       .split('/')
       .last()
-      .ok_or(EcsHelperVarietyError::ExtractEnvironmentError(
-        format!("Could not extract branch name from {branch}.")
-      ))?;
+      .ok_or(EcsHelperVarietyError::ExtractEnvironmentError(format!(
+        "Could not extract branch name from {branch}."
+      )))?;
 
     let environment = match branch {
       "master" => "production",
