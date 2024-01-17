@@ -116,11 +116,11 @@ impl Config {
 
   fn extract_environment() -> miette::Result<String, EcsHelperVarietyError> {
     let branch = std::env::var("CI_COMMIT_BRANCH").or_else(|_| Config::extract_branch_name())?;
-    dbg!(&branch);
 
     let environment = match branch.as_str() {
       "master" => "production",
       "main" => "production",
+      "develop" => "development",
       "qa" => "qa",
       "uat" => "uat",
       "staging" => "staging",
@@ -191,6 +191,17 @@ mod tests {
 
     let environment = Config::extract_environment().unwrap();
     assert_eq!(environment, "production");
+
+    repo
+      .branch(
+        "develop",
+        &repo.head().unwrap().peel_to_commit().unwrap(),
+        false,
+      )
+      .unwrap();
+    repo.set_head("refs/heads/develop").unwrap();
+    let environment = Config::extract_environment().unwrap();
+    assert_eq!(environment, "development");
 
     repo
       .branch("qa", &repo.head().unwrap().peel_to_commit().unwrap(), false)
