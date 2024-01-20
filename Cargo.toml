@@ -1,6 +1,7 @@
 [package]
 name = "ecs_helpers"
 description = "A tool for managing the deployment process of an application in Amazon Elastic Container Service (ECS)"
+license = "MIT"
 authors = ["Vasiliy Kuzenkove <batbondik0@gmail.com>"]
 keywords = ["AWS", "cli", "ECS"]
 version = "0.0.1"
