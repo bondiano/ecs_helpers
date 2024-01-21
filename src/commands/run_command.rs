@@ -1,7 +1,6 @@
 use std::time::Duration;
 
-use aws_sdk_ecr::types::{ImageIdentifier, Repository};
-use aws_sdk_ecs::types::{ContainerDefinition, Task};
+use aws_sdk_ecs::types::Task;
 use ecs_helpers::{
   args::RunCommandArguments, cluster_helpers, config::Config, ecr::EcrClient, ecs::EcsClient,
   errors::EcsHelperVarietyError, service_helpers, Command,
@@ -39,55 +38,6 @@ impl RunCommandCommand {
       command: args.command,
       container: args.container,
     }
-  }
-
-  async fn container_definition_to_ecr(
-    &self,
-    repositories: Vec<Repository>,
-    container_definition: &ContainerDefinition,
-  ) -> miette::Result<ContainerDefinition, EcsHelperVarietyError> {
-    let repository = repositories
-      .iter()
-      .find(|repository| {
-        let repository_uri = match repository.repository_uri() {
-          Some(repository_uri) => repository_uri,
-          None => return false,
-        };
-
-        let image = match container_definition.image() {
-          Some(image) => image,
-          None => return false,
-        };
-
-        image.contains(repository_uri)
-      })
-      .unwrap();
-
-    let repository_name = repository.repository_name().unwrap();
-    let repository_uri = repository.repository_uri().unwrap();
-    let version = self.config.version.clone();
-
-    let ecr_base = repository_uri.split('/').collect::<Vec<_>>();
-    let ecr_base = ecr_base.first().unwrap();
-
-    if !container_definition.image().unwrap().contains(ecr_base) {
-      return Err(EcsHelperVarietyError::ContainerDefinitionImageError(
-        container_definition.image().unwrap().to_owned(),
-      ));
-    };
-
-    let image_identifier = ImageIdentifier::builder().image_tag(&version).build();
-    self
-      .ecr_client
-      .describe_images(repository_name, image_identifier)
-      .await?;
-
-    let mut new_container_definition = container_definition.clone();
-
-    // we're partially cloning container definition because we need to change image according to repository
-    new_container_definition.image = Some(format!("{repository_uri}:{version}"));
-
-    Ok(new_container_definition)
   }
 
   async fn wait_for_task(
@@ -159,7 +109,12 @@ impl Command for RunCommandCommand {
 
         async move {
           self
-            .container_definition_to_ecr(repositories, container_definition)
+            .ecr_client
+            .create_new_container_definition_from(
+              container_definition,
+              repositories,
+              &self.config.version,
+            )
             .await
         }
       }))
