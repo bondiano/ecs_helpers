@@ -15,7 +15,10 @@ async fn main() -> miette::Result<()> {
   tracing_subscriber::fmt::init();
 
   let args = CommandArguments::parse();
+  log::debug!("Run with arguments: {:?}", args);
+
   let config = Config::new(&args).await?;
+  log::debug!("Config: {:?}", config);
 
   match args.cmd {
     Commands::Login(options) => {

@@ -4,6 +4,7 @@ use git2::Repository;
 
 const DEFAULT_REGION: &str = "us-east-1";
 
+#[derive(Debug)]
 pub struct Config {
   pub environment: String,
   pub version: String,
