@@ -20,10 +20,11 @@ impl Config {
     let sdk_config = aws_config::load_from_env().await;
 
     let commit_sha = Config::extract_commit_sha()?;
-    let environment = args
-      .environment
-      .to_owned()
-      .unwrap_or(Config::extract_environment()?);
+    let environment = match args.environment.to_owned() {
+      Some(environment) => environment,
+      None => Config::extract_environment()?,
+    };
+
     let version = args.version.to_owned().unwrap_or(Config::extract_version(
       args.use_image_tag_env_prefix,
       commit_sha,
