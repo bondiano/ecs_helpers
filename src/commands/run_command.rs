@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use aws_sdk_ecs::types::Task;
+use aws_sdk_ecs::types::{ContainerDefinition, Task};
 use ecs_helpers::{
   args::RunCommandArguments, cluster_helpers, config::Config, ecr::EcrClient, ecs::EcsClient,
   errors::EcsHelperVarietyError, service_helpers, Command,
@@ -76,6 +76,47 @@ impl RunCommandCommand {
 
     Err(EcsHelperVarietyError::WaitTaskTimeoutError(self.timeout))
   }
+
+  fn build_custom_task_definition(
+    &self,
+    from_container_definition: &ContainerDefinition,
+  ) -> ContainerDefinition {
+    let mut new_container_definition = from_container_definition.clone();
+
+    let container_name = from_container_definition.name().unwrap();
+    let name = match self.name {
+      Some(ref name) => format!("{container_name}-{name}"),
+      None => container_name.to_string(),
+    };
+
+    let new_log_configuration = new_container_definition
+      .log_configuration()
+      .unwrap()
+      .to_owned();
+    let mut new_options = new_log_configuration.options().unwrap().to_owned();
+    let new_log_configuration_prefix = format!(
+      "{}-{name}",
+      new_log_configuration
+        .options()
+        .unwrap()
+        .get("awslogs-stream-prefix")
+        .unwrap()
+    );
+    new_options.insert(
+      "awslogs-stream-prefix".to_string(),
+      new_log_configuration_prefix,
+    );
+
+    new_container_definition.log_configuration = Some(new_log_configuration);
+    new_container_definition.name = Some(name);
+    new_container_definition.command = Some(vec![
+      "bash".to_string(),
+      "-c".to_string(),
+      self.command.clone(),
+    ]);
+
+    new_container_definition
+  }
 }
 
 impl Command for RunCommandCommand {
@@ -129,7 +170,7 @@ impl Command for RunCommandCommand {
       )
       .collect::<Vec<_>>();
 
-    let mut new_container_definition = container_definitions_to_ecr
+    let new_container_definition = container_definitions_to_ecr
       .iter()
       .find(|container_definition| {
         let container_name = match container_definition.name() {
@@ -144,42 +185,11 @@ impl Command for RunCommandCommand {
       })
       .unwrap_or(container_definitions_to_ecr.first().unwrap())
       .to_owned();
-
-    let container_name = new_container_definition.name().unwrap();
-    let name = match self.name {
-      Some(ref name) => format!("{container_name}-{name}"),
-      None => container_name.to_string(),
-    };
-
-    let new_log_configuration = new_container_definition
-      .log_configuration()
-      .unwrap()
-      .to_owned();
-    let mut new_options = new_log_configuration.options().unwrap().to_owned();
-    let new_log_configuration_prefix = format!(
-      "{}-{name}",
-      new_log_configuration
-        .options()
-        .unwrap()
-        .get("awslogs-stream-prefix")
-        .unwrap()
-    );
-    new_options.insert(
-      "awslogs-stream-prefix".to_string(),
-      new_log_configuration_prefix,
-    );
-
-    new_container_definition.log_configuration = Some(new_log_configuration);
-    new_container_definition.name = Some(name);
-    new_container_definition.command = Some(vec![
-      "bash".to_string(),
-      "-c".to_string(),
-      self.command.clone(),
-    ]);
+    let new_container_definition = self.build_custom_task_definition(&new_container_definition);
 
     let new_service_task_definition = self
       .ecs_client
-      .register_task_definition_from(&service_task_definition, &new_container_definition)
+      .register_task_definition_from(&service_task_definition, vec![new_container_definition])
       .await?;
 
     let task_definition_arn = new_service_task_definition
