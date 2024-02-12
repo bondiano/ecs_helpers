@@ -101,7 +101,7 @@ impl Command for DeployCommand {
         }
       }))
       .await;
-    let container_definitions_to_ecr = container_definitions_to_ecr_tasks
+    let new_container_definitions = container_definitions_to_ecr_tasks
       .iter()
       .filter_map(
         |container_definition_to_ecr| match container_definition_to_ecr {
@@ -111,11 +111,9 @@ impl Command for DeployCommand {
       )
       .collect::<Vec<_>>();
 
-    let new_container_definition = container_definitions_to_ecr.first().unwrap();
-
     let new_service_task_definition = self
       .ecs_client
-      .register_task_definition_from(&service_task_definition, new_container_definition)
+      .register_task_definition_from(&service_task_definition, new_container_definitions)
       .await?;
 
     log::info!("Register task definition\nTask definition was registered",);

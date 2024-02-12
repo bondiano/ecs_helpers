@@ -121,12 +121,12 @@ impl EcsClient {
   pub async fn register_task_definition_from(
     &self,
     task_definition: &TaskDefinition,
-    container_definitions: &ContainerDefinition,
+    container_definitions: Vec<ContainerDefinition>,
   ) -> miette::Result<TaskDefinition, EcsHelperVarietyError> {
     let mut request = self
       .client
       .register_task_definition()
-      .container_definitions(container_definitions.clone());
+      .set_container_definitions(Some(container_definitions));
 
     if let Some(execution_role_arn) = task_definition.execution_role_arn() {
       request = request.execution_role_arn(execution_role_arn.to_owned());
@@ -268,5 +268,40 @@ mod tests {
       clusters.first().unwrap(),
       "arn:aws:ecs:us-east-1:123456789012:cluster/default"
     );
+  }
+
+  #[tokio::test]
+  async fn get_services() {
+    let request = HttpRequest::new(SdkBody::from(""));
+
+    let response = http::Response::builder()
+      .status(200)
+      .body(SdkBody::from(
+        "
+        {
+        \"services\":[]
+        }
+      ",
+      ))
+      .unwrap();
+    let page = ReplayEvent::new(request, response);
+
+    let http_client = StaticReplayClient::new(vec![page]);
+
+    let credentials = SharedCredentialsProvider::new(Credentials::for_tests_with_session_token());
+
+    let sdk_config = SdkConfig::builder()
+      .region(Region::new("us-east-1"))
+      .behavior_version(BehaviorVersion::latest())
+      .credentials_provider(credentials)
+      .http_client(http_client)
+      .build();
+    let ecs_client = EcsClient::new(&sdk_config);
+
+    let cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/default".to_owned();
+
+    let clusters = ecs_client.get_services(&cluster_arn).await.unwrap();
+
+    assert_eq!(clusters.len(), 0);
   }
 }
