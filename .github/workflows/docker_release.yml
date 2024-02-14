@@ -2,7 +2,7 @@ name: Build and Release docker image
 
 on:
   workflow_run:
-    workflows: ["Cargo Test", "Cargo Check"]
+    workflows: [check, test]
     types:
       - completed
   push:
@@ -34,3 +34,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/ecs_helpers:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
