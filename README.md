@@ -8,7 +8,7 @@ Mostly drop-in replacement for [ecs_helper](https://github.com/dualboot-partners
 
 ## Introduction
 
-ECS Helper is a command-line tool that allows you to control the deployment process of your application in Amazon Elastic Container Service. The tool provides various commands for building and pushing images, deploying your application, exporting images, logging in to Amazon Elastic Container Registry (ECR), running commands, exporting environment variables, and more. To use it an ECS Cluster with a service running there and have `task_definitons` is required. Docker images are stored in the ECR Elastic Container Registry.
+**ECS Helpers** is a command-line tool that allows you to control the deployment process of your application in Amazon Elastic Container Service. The tool provides various commands for building and pushing images, deploying your application, exporting images, logging in to Amazon Elastic Container Registry (ECR), running commands, exporting environment variables, and more. To use it an ECS Cluster with a service running there and have `task_definitons` is required. Docker images are stored in the ECR Elastic Container Registry.
 
 ## Installation
 
@@ -19,7 +19,7 @@ ECS Helper is a command-line tool that allows you to control the deployment proc
 
 ### Using Cargo
 
-To use ECS Helper, you need to install the `ecs_helpers` crate. You can install it using the following command:
+To use **ECS Helpers**, you need to install the `ecs_helpers` crate. You can install it using the following command:
 
 ```bash
 cargo install ecs_helpers
@@ -55,13 +55,12 @@ ecs_helpers build_and_push --image=api
 
 ## Using in GitLab CI
 
-ECS Helpers can also be used in GitLab CI by using a pre-built Docker image. Here's an example of how to use ECS Helpers in a GitLab CI pipeline:
+**ECS Helpers** can also be used in GitLab CI by using a pre-built Docker image. Here's an example of how to use **ECS Helpers** in a GitLab CI pipeline:
 
 ```yaml
 stages:
   - build
   - deploy
-
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -76,7 +75,6 @@ variables:
   USE_IMAGE_TAG_ENV_PREFIX: "true"
 
 .ci_deploy: &ci_deploy
-
 only:
   - master
   - staging

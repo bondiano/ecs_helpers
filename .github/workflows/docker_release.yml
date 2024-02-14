@@ -1,6 +1,10 @@
-name: build and release docker image
+name: Build and Release docker image
 
 on:
+  workflow_run:
+    workflows: ["Cargo Test", "Cargo Check"]
+    types:
+      - completed
   push:
     branches:
       - master
@@ -26,6 +30,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          platforms: linux/amd64, linux/arm64
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/ecs_helpers:latest
