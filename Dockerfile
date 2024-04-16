@@ -1,4 +1,4 @@
-FROM  lukemathwalker/cargo-chef:latest-rust-1.75.0-alpine as chef
+FROM lukemathwalker/cargo-chef:latest-rust-1.77-alpine3.19 as chef
 WORKDIR /ecs_helpers
 
 FROM --platform=$BUILDPLATFORM chef AS planner
@@ -16,7 +16,7 @@ COPY . .
 
 RUN cargo build --release
 
-FROM --platform=$BUILDPLATFORM docker:24.0.7-cli-alpine3.19
+FROM docker:26.0.1-cli-alpine3.19
 WORKDIR /app
 
 COPY --from=builder /ecs_helpers/target/release/ecs_helpers /usr/local/bin/ecs_helpers

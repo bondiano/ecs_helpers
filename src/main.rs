@@ -23,32 +23,26 @@ async fn main() -> miette::Result<()> {
   match args.cmd {
     Commands::Login(options) => {
       let login_command = LoginCommand::new(config, options);
-
       run_command(login_command).await
     }
     Commands::ExportImages(options) => {
       let export_images_command = ExportImagesCommand::new(config, options);
-
       run_command(export_images_command).await
     }
     Commands::RunCommand(options) => {
       let run_command_command = RunCommandCommand::new(config, options);
-
       run_command(run_command_command).await
     }
     Commands::ExportEnvSecrets(options) => {
       let export_env_secrets_command = ExportEnvSecretsCommand::new(config, options);
-
       run_command(export_env_secrets_command).await
     }
     Commands::BuildAndPush(options) => {
       let build_and_push_command = BuildAndPushCommand::new(config, options);
-
       run_command(build_and_push_command).await
     }
     Commands::Deploy(options) => {
       let deploy_command = DeployCommand::new(config, options);
-
       run_command(deploy_command).await
     }
   }
