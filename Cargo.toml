@@ -2,7 +2,7 @@
 name = "ecs_helpers"
 description = "A tool for managing the deployment process of an application in Amazon Elastic Container Service (ECS)"
 license = "MIT"
-authors = ["Vasiliy Kuzenkove <batbondik0@gmail.com>"]
+authors = ["Vasiliy Kuzenkov <batbondik0@gmail.com>"]
 keywords = ["AWS", "cli", "ECS"]
 version = "0.0.3"
 edition = "2021"
@@ -26,7 +26,7 @@ aws-sdk-ssm = "1.9.0"
 aws-smithy-runtime = { version = "1.1.2", features = ["test-util"] }
 aws-smithy-types = { version = "1.1.2", features = ["test-util"] }
 aws-smithy-runtime-api = { version = "1.1.2", features = ["test-util"] }
-base64 = "0.21.5"
+base64 = "0.22.0"
 clap = { version = "4.4.12", features = ["derive", "env"] }
 futures = "0.3.30"
 git2 = "0.18.1"

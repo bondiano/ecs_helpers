@@ -304,4 +304,43 @@ mod tests {
 
     assert_eq!(clusters.len(), 0);
   }
+
+  #[tokio::test]
+  async fn get_task_definitions() {
+    let request = HttpRequest::new(SdkBody::from(""));
+
+    let response = http::Response::builder()
+      .status(200)
+      .body(SdkBody::from(
+        "
+        {
+          \"taskDefinitionArns\": [
+            \"arn:aws:ecs:us-east-1:123456789012:task-definition/nginx:1\"
+          ]
+        }
+      ",
+      ))
+      .unwrap();
+    let page = ReplayEvent::new(request, response);
+
+    let http_client = StaticReplayClient::new(vec![page]);
+
+    let credentials = SharedCredentialsProvider::new(Credentials::for_tests_with_session_token());
+
+    let sdk_config = SdkConfig::builder()
+      .region(Region::new("us-east-1"))
+      .behavior_version(BehaviorVersion::latest())
+      .credentials_provider(credentials)
+      .http_client(http_client)
+      .build();
+    let ecs_client = EcsClient::new(&sdk_config);
+
+    let task_definitions = ecs_client.get_task_definitions().await.unwrap();
+
+    assert_eq!(task_definitions.len(), 1);
+    assert_eq!(
+      task_definitions.first().unwrap(),
+      "arn:aws:ecs:us-east-1:123456789012:task-definition/nginx:1"
+    );
+  }
 }
