@@ -16,7 +16,7 @@ COPY . .
 
 RUN cargo build --release
 
-FROM docker:26.0.1-cli-alpine3.19
+FROM --platform=$BUILDPLATFORM docker:26.0.1-cli-alpine3.19
 WORKDIR /app
 
 COPY --from=builder /ecs_helpers/target/release/ecs_helpers /usr/local/bin/ecs_helpers
