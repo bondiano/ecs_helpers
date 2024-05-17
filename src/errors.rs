@@ -150,6 +150,10 @@ pub enum EcsHelperVarietyError {
   #[diagnostic(code(ecs_helper::ecr::repository_not_found))]
   NoRepositoryFound,
 
+  #[error("Multiple repositories found:\n{0}")]
+  #[diagnostic(code(ecs_helper::ecr::multiple_repositories_found))]
+  MultipleRepositoriesFound(String),
+
   #[error("Failed to pull image:\n{0}")]
   #[diagnostic(code(ecs_helper::docker::pull_image_error))]
   PullImageError(String),

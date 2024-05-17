@@ -70,6 +70,15 @@ impl BuildAndPushCommand {
       return Ok(repository);
     }
 
+    if exact.len() > 1 {
+      return Err(EcsHelperVarietyError::MultipleRepositoriesFound(
+        exact
+          .iter()
+          .map(|repo| repo.repository_name().unwrap().to_string())
+          .collect(),
+      ));
+    }
+
     Err(EcsHelperVarietyError::NoRepositoryFound)
   }
 

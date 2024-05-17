@@ -1,4 +1,4 @@
-FROM bondiano/ecs_helpers:0.0.1
+FROM bondiano/ecs_helpers:latest
 WORKDIR /app
 
 RUN apk add --no-cache \
