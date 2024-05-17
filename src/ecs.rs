@@ -343,4 +343,48 @@ mod tests {
       "arn:aws:ecs:us-east-1:123456789012:task-definition/nginx:1"
     );
   }
+
+  #[tokio::test]
+  async fn test_describe_task_definition() {
+    let request = HttpRequest::new(SdkBody::from(""));
+
+    let response = http::Response::builder()
+      .status(200)
+      .body(SdkBody::from(
+        "
+        {
+          \"taskDefinition\": {
+            \"taskDefinitionArn\": \"arn:aws:ecs:us-east-1:123456789012:task-definition/nginx:1\"
+          }
+        }
+      ",
+      ))
+      .unwrap();
+    let page = ReplayEvent::new(request, response);
+
+    let http_client = StaticReplayClient::new(vec![page]);
+
+    let credentials = SharedCredentialsProvider::new(Credentials::for_tests_with_session_token());
+
+    let sdk_config = SdkConfig::builder()
+      .region(Region::new("us-east-1"))
+      .behavior_version(BehaviorVersion::latest())
+      .credentials_provider(credentials)
+      .http_client(http_client)
+      .build();
+
+    let ecs_client = EcsClient::new(&sdk_config);
+    let task_definition_arn =
+      "arn:aws:ecs:us-east-1:123456789012:task-definition/nginx:1".to_owned();
+    let task_definition = ecs_client
+      .describe_task_definition(&task_definition_arn)
+      .await
+      .unwrap();
+
+    assert_eq!(
+      task_definition.task_definition_arn(),
+      Some(task_definition_arn.as_str())
+    );
+    assert!(task_definition.task_role_arn().is_none());
+  }
 }
