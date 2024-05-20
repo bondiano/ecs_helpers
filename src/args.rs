@@ -103,6 +103,11 @@ pub struct BuildAndPushCommandArguments {
   /// Pass --build-arg to the build command
   #[clap(long, env)]
   pub build_arg: Option<Vec<String>>,
+
+  /// Set the ECR repository name
+  /// If not set, it will be detected based on the application and project name
+  #[clap(long, env)]
+  pub repository: Option<String>,
 }
 
 #[derive(Subcommand, Debug)]

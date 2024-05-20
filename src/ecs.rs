@@ -387,4 +387,46 @@ mod tests {
     );
     assert!(task_definition.task_role_arn().is_none());
   }
+
+  #[tokio::test]
+  async fn test_update_service() {
+    let request = HttpRequest::new(SdkBody::from(""));
+
+    let response = http::Response::builder()
+      .status(200)
+      .body(SdkBody::from(
+        "
+        {
+          \"service\": {
+            \"serviceArn\": \"arn:aws:ecs:us-east-1:123456789012:service/nginx\"
+          }
+        }
+      ",
+      ))
+      .unwrap();
+    let page = ReplayEvent::new(request, response);
+
+    let http_client = StaticReplayClient::new(vec![page]);
+
+    let credentials = SharedCredentialsProvider::new(Credentials::for_tests_with_session_token());
+
+    let sdk_config = SdkConfig::builder()
+      .region(Region::new("us-east-1"))
+      .behavior_version(BehaviorVersion::latest())
+      .credentials_provider(credentials)
+      .http_client(http_client)
+      .build();
+
+    let ecs_client = EcsClient::new(&sdk_config);
+    let cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/default".to_owned();
+    let task_definition_arn =
+      "arn:aws:ecs:us-east-1:123456789012:task-definition/nginx:1".to_owned();
+    let service_arn = "arn:aws:ecs:us-east-1:123456789012:service/nginx".to_owned();
+    let service = ecs_client
+      .update_service(&cluster_arn, &task_definition_arn, &service_arn)
+      .await
+      .unwrap();
+
+    assert_eq!(service.service_arn(), Some(service_arn.as_str()));
+  }
 }

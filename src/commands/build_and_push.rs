@@ -12,6 +12,7 @@ pub struct BuildAndPushCommand {
   should_cache: bool,
   build_arg: Option<Vec<String>>,
   directory: String,
+  repository: Option<String>,
 }
 
 impl BuildAndPushCommand {
@@ -25,6 +26,7 @@ impl BuildAndPushCommand {
       should_cache: args.cache,
       build_arg: args.build_arg,
       directory: args.directory,
+      repository: args.repository,
     }
   }
 
@@ -53,6 +55,12 @@ impl BuildAndPushCommand {
       .iter()
       .filter_map(|repo| {
         let arn = repo.repository_arn()?;
+
+        if let Some(repository) = &self.repository {
+          if arn == repository {
+            return Some(repo);
+          }
+        }
 
         let same_project = arn.contains(&self.config.project);
         let same_application = arn.contains(&self.config.application);
