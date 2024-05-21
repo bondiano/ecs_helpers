@@ -141,3 +141,73 @@ impl EcrClient {
     Ok(new_container_definition)
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use aws_config::{BehaviorVersion, Region};
+  use aws_sdk_ecr::config::{Credentials, SharedCredentialsProvider};
+  use aws_smithy_runtime::client::http::test_util::{ReplayEvent, StaticReplayClient};
+  use aws_smithy_runtime_api::client::orchestrator::HttpRequest;
+  use aws_smithy_types::body::SdkBody;
+
+  #[tokio::test]
+  async fn test_describe_images() {
+    let request = HttpRequest::new(SdkBody::from(""));
+
+    let response = http::Response::builder()
+      .status(200)
+      .body(SdkBody::from(
+        "
+         {
+            \"imageDetails\": [
+              {
+                \"imageDigest\": \"sha256:1234567890\",
+                \"imageTags\": [\"latest\"],
+                \"registryId\": \"1234567890\",
+                \"repositoryName\": \"test\",
+                \"imageSizeInBytes\": 1234567890,
+                \"imagePushedAt\": 1234567890,
+                \"imageScanFindingsSummary\": {
+                  \"findingSeverityCounts\": {
+                    \"CRITICAL\": 0,
+                    \"HIGH\": 0,
+                    \"MEDIUM\": 0,
+                    \"LOW\": 0,
+                    \"INFORMATIONAL\": 0,
+                    \"UNDEFINED\": 0
+                  },
+                  \"imageScanCompletedAt\": 1234567890,
+                  \"vulnerabilitySourceUpdatedAt\": 1234567890
+                },
+                \"imageScanStatus\": {
+                  \"status\": \"COMPLETE\",
+                  \"description\": \"Image scan completed and found no vulnerabilities\"
+                }
+              }
+            ]
+         }
+        ",
+      ))
+      .unwrap();
+
+    let page = ReplayEvent::new(request, response);
+
+    let http_client = StaticReplayClient::new(vec![page]);
+
+    let credentials = SharedCredentialsProvider::new(Credentials::for_tests_with_session_token());
+
+    let sdk_config = SdkConfig::builder()
+      .region(Region::new("us-east-1"))
+      .behavior_version(BehaviorVersion::latest())
+      .credentials_provider(credentials)
+      .http_client(http_client)
+      .build();
+
+    let client = EcrClient::new(&sdk_config);
+    let image_id = ImageIdentifier::builder().image_tag("latest").build();
+    let image_detail = client.describe_images("test", image_id).await.unwrap();
+
+    assert_eq!(image_detail.image_digest(), Some("sha256:1234567890"));
+  }
+}

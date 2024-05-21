@@ -232,7 +232,7 @@ mod tests {
   use aws_smithy_types::body::SdkBody;
 
   #[tokio::test]
-  async fn get_clusters() {
+  async fn test_get_clusters() {
     let request = HttpRequest::new(SdkBody::from(""));
 
     let response = http::Response::builder()
@@ -306,7 +306,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn get_task_definitions() {
+  async fn test_get_task_definitions() {
     let request = HttpRequest::new(SdkBody::from(""));
 
     let response = http::Response::builder()
