@@ -11,9 +11,19 @@ on:
     branches:
       - master
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,6 +43,12 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -42,6 +58,5 @@ jobs:
           push: true
           cache-from: type=gha,scope=$GITHUB_REF_NAME-ecs_helpers
           cache-to: type=gha,mode=max,scope=$GITHUB_REF_NAME-ecs_helpers
-          tags: |
-            ghcr.io/bondiano/ligretto-bot-clj:${{ github.sha }}
-            ghcr.io/bondiano/ecs_helpers/ecs_helpers:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

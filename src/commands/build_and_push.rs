@@ -57,7 +57,7 @@ impl BuildAndPushCommand {
         let arn = repo.repository_arn()?;
 
         if let Some(repository) = &self.repository {
-          if arn == repository {
+          if arn.contains(repository) {
             return Some(repo);
           }
         }
@@ -83,7 +83,8 @@ impl BuildAndPushCommand {
         exact
           .iter()
           .map(|repo| repo.repository_name().unwrap().to_string())
-          .collect(),
+          .collect::<Vec<String>>()
+          .join(", "),
       ));
     }
 
