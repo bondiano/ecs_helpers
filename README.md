@@ -34,7 +34,7 @@ Alternatively, you can use the Docker image `bondiano/ecs_helpers`. This image c
 To use the Docker image, you can run the following command:
 
 ```bash
-docker run bondiano/ecs_helpers ecs_helpers
+docker run ghcr.io/bondiano/ecs_helpers ecs_helpers
 ```
 
 ## The available commands are
@@ -67,7 +67,7 @@ variables:
   DOCKER_TLS_CERTDIR: ''
   DOCKER_IMAGE: docker:20.10.6
   PROJECT: test_project
-  ECS_HELPERS_IMAGE: bondiano/ecs_helpers:latest
+  ECS_HELPERS_IMAGE: ghcr.io/bondiano/ecs_helpers:latest
   AWS_REGION: us-east-1
   AWS_DEFAULT_REGION: us-east-1
   APPLICATION: app
