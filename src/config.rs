@@ -126,6 +126,7 @@ impl Config {
       "uat" => "uat",
       "staging" => "staging",
       "demo" => "demo",
+      "sandbox" => "sandbox",
       _ => Err(EcsHelperVarietyError::ExtractEnvironmentError(format!(
         "Could not match branch name {branch} with environment."
       )))?,
@@ -232,5 +233,16 @@ mod tests {
     repo.set_head("refs/heads/demo").unwrap();
     let environment = Config::extract_environment().unwrap();
     assert_eq!(environment, "demo");
+
+    repo
+      .branch(
+        "sandbox",
+        &repo.head().unwrap().peel_to_commit().unwrap(),
+        false,
+      )
+      .unwrap();
+    repo.set_head("refs/heads/sandbox").unwrap();
+    let environment = Config::extract_environment().unwrap();
+    assert_eq!(environment, "sandbox");
   }
 }
