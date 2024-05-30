@@ -174,6 +174,10 @@ pub enum EcsHelperVarietyError {
   #[diagnostic(code(ecs_helper::ecs::update_service_error))]
   UpdateServiceError(#[from] SdkError<UpdateServiceError>),
 
+  #[error("Failed to find container defunition\n")]
+  #[diagnostic(code(ecs_helper::ecs::cannot_find_container_definition))]
+  CannotFindContainerDefinition,
+
   #[error("Failed to extract service")]
   #[diagnostic(code(ecs_helper::ecs::extract_service_error))]
   ExtractServiceError,

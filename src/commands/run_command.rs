@@ -135,6 +135,7 @@ impl Command for RunCommandCommand {
     let service = self.ecs_client.describe_service(&cluster, &service).await?;
 
     let service_task_definition = service.task_definition().unwrap().to_owned();
+
     let service_task_definition = self
       .ecs_client
       .describe_task_definition(&service_task_definition)
@@ -160,6 +161,7 @@ impl Command for RunCommandCommand {
         }
       }))
       .await;
+
     let container_definitions_to_ecr = container_definitions_to_ecr_tasks
       .iter()
       .filter_map(
@@ -183,8 +185,13 @@ impl Command for RunCommandCommand {
           None => true,
         }
       })
-      .unwrap_or(container_definitions_to_ecr.first().unwrap())
+      .unwrap_or(
+        container_definitions_to_ecr
+          .first()
+          .ok_or(EcsHelperVarietyError::CannotFindContainerDefinition)?,
+      )
       .to_owned();
+
     let new_container_definition = self.build_custom_task_definition(&new_container_definition);
 
     let new_service_task_definition = self
