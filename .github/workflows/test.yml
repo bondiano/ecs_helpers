@@ -14,9 +14,7 @@ jobs:
     name: ubuntu / ${{ matrix.toolchain }}
     strategy:
       matrix:
-        # run on stable and beta to ensure that tests won't break on the next version of the rust
-        # toolchain
-        toolchain: [stable, beta]
+        toolchain: [stable]
     steps:
       - uses: actions/checkout@v4
         with:
