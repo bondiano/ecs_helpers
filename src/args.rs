@@ -92,9 +92,13 @@ pub struct BuildAndPushCommandArguments {
   #[clap(short, long, env)]
   pub image: String,
 
-  /// Set directory for dockerfile and context
+  /// Set directory for docker context
   #[clap(short, long, env, default_value = "./")]
   pub directory: String,
+
+  /// Set path for dockerfile
+  #[clap(short, long, env, default_value = "./Dockerfile")]
+  pub file: String,
 
   /// Cache image before build
   #[clap(long, env, default_value = "false")]

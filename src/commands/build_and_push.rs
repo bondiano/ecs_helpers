@@ -12,6 +12,7 @@ pub struct BuildAndPushCommand {
   should_cache: bool,
   build_arg: Option<Vec<String>>,
   directory: String,
+  file: String,
   repository: Option<String>,
 }
 
@@ -26,6 +27,7 @@ impl BuildAndPushCommand {
       should_cache: args.cache,
       build_arg: args.build_arg,
       directory: args.directory,
+      file: args.file,
       repository: args.repository,
     }
   }
@@ -116,6 +118,8 @@ impl BuildAndPushCommand {
     let mut command = TokioCommand::new("docker");
     command.arg("build");
     command.arg(self.directory.clone());
+
+    command.arg(format!("--file={}", self.file.clone()));
 
     if let Some(build_arg) = &self.build_arg {
       for build_arg in build_arg {
