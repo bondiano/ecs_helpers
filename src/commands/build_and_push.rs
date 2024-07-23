@@ -14,6 +14,7 @@ pub struct BuildAndPushCommand {
   directory: String,
   file: String,
   repository: Option<String>,
+  target: Option<String>,
 }
 
 impl BuildAndPushCommand {
@@ -29,6 +30,7 @@ impl BuildAndPushCommand {
       directory: args.directory,
       file: args.file,
       repository: args.repository,
+      target: args.target,
     }
   }
 
@@ -127,6 +129,10 @@ impl BuildAndPushCommand {
       }
     }
 
+    if let Some(target) = &self.target {
+      command.arg(format!("--target={}", target));
+    }
+
     if self.should_cache {
       command.arg("--cache-from");
       command.arg(format!("{}:latest", repository));
@@ -134,6 +140,7 @@ impl BuildAndPushCommand {
 
     let latest_tag: String = format!("{}:latest", repository);
     let version_tag: String = format!("{}:{}", repository, self.config.version);
+
     command.arg("-t");
     command.arg(&version_tag);
     command.arg("-t");
