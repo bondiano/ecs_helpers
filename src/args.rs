@@ -112,6 +112,10 @@ pub struct BuildAndPushCommandArguments {
   /// If not set, it will be detected based on the application and project name
   #[clap(long, env)]
   pub repository: Option<String>,
+
+  /// Set the build target for the docker image
+  #[clap(long, env)]
+  pub target: Option<String>,
 }
 
 #[derive(Subcommand, Debug)]
