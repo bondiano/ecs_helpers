@@ -104,6 +104,10 @@ pub struct BuildAndPushCommandArguments {
   #[clap(long, env, default_value = "false")]
   pub cache: bool,
 
+  /// Print stdout of the shell commands
+  #[clap(long, env, default_value = "false")]
+  pub need_stdout: bool,
+
   /// Pass --build-arg to the build command
   #[clap(long, env)]
   pub build_arg: Option<Vec<String>>,
