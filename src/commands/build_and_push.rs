@@ -6,6 +6,8 @@ use futures::try_join;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command as TokioCommand;
+use std::process::Stdio;
+use tokio::io::{BufReader, AsyncBufReadExt};
 
 pub struct BuildAndPushCommand {
   config: Config,
