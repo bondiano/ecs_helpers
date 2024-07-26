@@ -3,9 +3,9 @@ use ecs_helpers::{
   errors::EcsHelperVarietyError, Command,
 };
 use futures::try_join;
-use tokio::process::Command as TokioCommand;
 use std::process::Stdio;
-use tokio::io::{BufReader, AsyncBufReadExt};
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::Command as TokioCommand;
 
 pub struct BuildAndPushCommand {
   config: Config,
@@ -205,28 +205,34 @@ impl BuildAndPushCommand {
     Ok(())
   }
 
-  async fn print_stdout(&self, command: &mut TokioCommand) -> miette::Result<(), EcsHelperVarietyError> {
+  async fn print_stdout(
+    &self,
+    command: &mut TokioCommand,
+  ) -> miette::Result<(), EcsHelperVarietyError> {
     command.stdout(Stdio::piped());
 
-    let mut child = command.spawn()
-        .expect("failed to spawn command");
+    let mut child = command.spawn().expect("failed to spawn command");
 
-    let stdout = child.stdout.take()
-        .expect("child did not have a handle to stdout");
+    let stdout = child
+      .stdout
+      .take()
+      .expect("child did not have a handle to stdout");
 
     let mut reader = BufReader::new(stdout).lines();
 
     // Ensure the child process is spawned in the runtime so it can
     // make progress on its own while we await for any output.
     tokio::spawn(async move {
-        let status = child.wait().await
-            .expect("child process encountered an error");
+      let status = child
+        .wait()
+        .await
+        .expect("child process encountered an error");
 
-        println!("child status was: {}", status);
+      println!("child status was: {}", status);
     });
 
     while let Some(line) = reader.next_line().await? {
-        println!("{}", line);
+      println!("{}", line);
     }
 
     Ok(())
