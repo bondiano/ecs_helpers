@@ -194,9 +194,7 @@ mod tests {
     let page = ReplayEvent::new(request, response);
 
     let http_client = StaticReplayClient::new(vec![page]);
-
     let credentials = SharedCredentialsProvider::new(Credentials::for_tests_with_session_token());
-
     let sdk_config = SdkConfig::builder()
       .region(Region::new("us-east-1"))
       .behavior_version(BehaviorVersion::latest())
