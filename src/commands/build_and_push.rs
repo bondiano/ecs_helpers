@@ -6,9 +6,6 @@ use futures::try_join;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command as TokioCommand;
-use std::process::Stdio;
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::process::Command as TokioCommand;
 
 pub struct BuildAndPushCommand {
   config: Config,
@@ -21,6 +18,7 @@ pub struct BuildAndPushCommand {
   repository: Option<String>,
   target: Option<String>,
   need_stdout: bool,
+  platform: String,
 }
 
 impl BuildAndPushCommand {
@@ -38,6 +36,7 @@ impl BuildAndPushCommand {
       repository: args.repository,
       target: args.target,
       need_stdout: args.need_stdout,
+      platform: args.platform,
     }
   }
 
@@ -127,7 +126,7 @@ impl BuildAndPushCommand {
     let mut command = TokioCommand::new("docker");
     command.arg("build");
     command.arg(self.directory.clone());
-
+    command.arg(self.platform.clone());
     command.arg(format!("--file={}", self.file.clone()));
 
     if let Some(build_arg) = &self.build_arg {

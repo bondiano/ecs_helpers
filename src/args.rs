@@ -120,6 +120,10 @@ pub struct BuildAndPushCommandArguments {
   /// Set the build target for the docker image
   #[clap(long, env)]
   pub target: Option<String>,
+
+  /// Set platform for docker image
+  #[clap(long, env, default_value = "linux/amd64")]
+  pub platform: String,
 }
 
 #[derive(Subcommand, Debug)]
