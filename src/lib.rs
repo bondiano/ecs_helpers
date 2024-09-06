@@ -10,5 +10,6 @@ pub mod ssm;
 
 pub mod cluster_helpers;
 pub mod service_helpers;
+pub mod task_helpers;
 
 pub use command::Command;

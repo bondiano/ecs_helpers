@@ -6,7 +6,7 @@ use ecs_helpers::{
   config::Config,
 };
 
-use crate::commands::{ExportImagesCommand, LoginCommand, RunCommandCommand};
+use crate::commands::{ExportImagesCommand, LoginCommand, RunCommandCommand, ExecCommand};
 
 mod commands;
 
@@ -32,6 +32,10 @@ async fn main() -> miette::Result<()> {
     Commands::RunCommand(options) => {
       let run_command_command = RunCommandCommand::new(config, options);
       run_command(run_command_command).await
+    }
+    Commands::Exec(options) => {
+      let exec_command = ExecCommand::new(config, options);
+      run_command(exec_command).await
     }
     Commands::ExportEnvSecrets(options) => {
       let export_env_secrets_command = ExportEnvSecretsCommand::new(config, options);

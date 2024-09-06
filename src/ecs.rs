@@ -1,6 +1,6 @@
 use aws_config::SdkConfig;
 use aws_sdk_ecs::{
-  types::{ContainerDefinition, LaunchType, NetworkConfiguration, Service, Task, TaskDefinition},
+  types::{ContainerDefinition, DesiredStatus, LaunchType, NetworkConfiguration, Service, Session, Task, TaskDefinition},
   Client,
 };
 
@@ -43,6 +43,25 @@ impl EcsClient {
       .map_err(EcsHelperVarietyError::GetListServicesError)?;
 
     Ok(response.service_arns().to_vec())
+  }
+
+  pub async fn get_tasks(
+    &self,
+    cluster_arn: &String,
+    service_arn: &String,
+  ) -> miette::Result<Vec<String>, EcsHelperVarietyError> {
+    let response = self
+      .client
+      .list_tasks()
+      .cluster(cluster_arn)
+      .service_name(service_arn)
+      .desired_status(DesiredStatus::Running)
+      .max_results(100)
+      .send()
+      .await
+      .map_err(EcsHelperVarietyError::GetListTasksError)?;
+
+    Ok(response.task_arns().to_vec())
   }
 
   pub async fn describe_service(
@@ -166,6 +185,34 @@ impl EcsClient {
       .ok_or(EcsHelperVarietyError::ExtractTaskDefinitionError)?;
 
     Ok(task_definition.to_owned())
+  }
+
+  pub async fn execute_command(
+    &self,
+    cluster_arn: &String,
+    task_arn: &String,
+    container: &String,
+    command: &String,
+  ) -> miette::Result<Session, EcsHelperVarietyError> {
+    let execute_command_builder = self
+      .client
+      .execute_command()
+      .interactive(true)
+      .command(command)
+      .cluster(cluster_arn)
+      .task(task_arn)
+      .container(container);
+
+    let response = execute_command_builder
+      .send()
+      .await
+      .map_err(EcsHelperVarietyError::ExecuteCommandError)?;
+
+    let session = response
+      .session
+      .ok_or(EcsHelperVarietyError::ExtractServiceError)?;
+
+    Ok(session.to_owned())
   }
 
   pub async fn run_task(
@@ -306,6 +353,44 @@ mod tests {
   }
 
   #[tokio::test]
+  async fn get_tasks() {
+    let request = HttpRequest::new(SdkBody::from(""));
+
+    let response = http::Response::builder()
+      .status(200)
+      .body(SdkBody::from(
+        "
+        {
+          \"taskArns\": [
+            \"arn:aws:ecs:us-east-1:123456789012:task/cluster/j2h3g4jh32jh23j4hg2j3h4hj2g3j4g\"
+          ]
+        }
+      ",
+      ))
+      .unwrap();
+    let page = ReplayEvent::new(request, response);
+
+    let http_client = StaticReplayClient::new(vec![page]);
+
+    let credentials = SharedCredentialsProvider::new(Credentials::for_tests_with_session_token());
+
+    let sdk_config = SdkConfig::builder()
+      .region(Region::new("us-east-1"))
+      .behavior_version(BehaviorVersion::latest())
+      .credentials_provider(credentials)
+      .http_client(http_client)
+      .build();
+    let ecs_client = EcsClient::new(&sdk_config);
+
+    let cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/default".to_owned();
+    let service_arn = "arn:aws:ecs:us-east-1:123456789012:service/default/web".to_owned();
+
+    let tasks = ecs_client.get_tasks(&cluster_arn, &service_arn).await.unwrap();
+
+    assert_eq!(tasks.len(), 1);
+  }
+
+  #[tokio::test]
   async fn test_get_task_definitions() {
     let request = HttpRequest::new(SdkBody::from(""));
 
@@ -341,6 +426,62 @@ mod tests {
     assert_eq!(
       task_definitions.first().unwrap(),
       "arn:aws:ecs:us-east-1:123456789012:task-definition/nginx:1"
+    );
+  }
+
+  #[tokio::test]
+  async fn test_describe_task() {
+    let request = HttpRequest::new(SdkBody::from(""));
+
+    let response = http::Response::builder()
+      .status(200)
+      .body(SdkBody::from(
+        r#"
+          {
+            "tasks": [
+              {
+                "containers": [
+                  {
+                    "containerArn": "arn:aws:ecs:us-east-1:123456789012:container/cluster/53df858569f6d3a6e7c0f59b1/46b999999997d-5a58-4de8-a90c-ca9bd338e3a3",
+                    "taskArn": "arn:aws:ecs:us-east-1:123456789012:task/cluster/j2h3g4jh32jh23j4hg2j3h4hj2g3j4g",
+                    "name": "api",
+                    "lastStatus": "RUNNING"
+                  }
+                ],
+                "lastStatus": "RUNNING",
+                "taskArn": "arn:aws:ecs:us-east-1:123456789012:task/cluster/j2h3g4jh32jh23j4hg2j3h4hj2g3j4g"
+              }
+            ]
+          }
+        "#,
+      ))
+      .unwrap();
+    let page = ReplayEvent::new(request, response);
+
+    let http_client = StaticReplayClient::new(vec![page]);
+
+    let credentials = SharedCredentialsProvider::new(Credentials::for_tests_with_session_token());
+
+    let sdk_config = SdkConfig::builder()
+      .region(Region::new("us-east-1"))
+      .behavior_version(BehaviorVersion::latest())
+      .credentials_provider(credentials)
+      .http_client(http_client)
+      .build();
+
+    let ecs_client = EcsClient::new(&sdk_config);
+    let cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/default".to_owned();
+    let task_arn = "arn:aws:ecs:us-east-1:123456789012:task/cluster/j2h3g4jh32jh23j4hg2j3h4hj2g3j4g".to_owned();
+    let container_arn = "arn:aws:ecs:us-east-1:123456789012:container/cluster/53df858569f6d3a6e7c0f59b1/46b999999997d-5a58-4de8-a90c-ca9bd338e3a3".to_owned();
+
+    let task = ecs_client
+      .describe_task(&task_arn, &cluster_arn)
+      .await
+      .unwrap();
+
+    assert_eq!(
+      task.containers.unwrap().last().unwrap().container_arn,
+      Some(container_arn)
     );
   }
 
