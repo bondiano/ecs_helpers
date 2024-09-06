@@ -80,6 +80,29 @@ pub struct RunCommandArguments {
 }
 
 #[derive(Args, Debug)]
+pub struct ExecCommandArguments {
+  /// Set command, should not demonize container
+  #[clap(short, long, env, default_value = "/bin/bash")]
+  pub command: String,
+
+  /// Set cluster name, could be auto-detected if project and environment are specified
+  #[clap(long, env)]
+  pub cluster: Option<String>,
+
+  /// Set service, could be auto-detected if application and environment are specified
+  #[clap(short, long, env)]
+  pub service: Option<String>,
+
+  /// Set task, could be auto-detected if application and environment are specified
+  #[clap(short, long, env)]
+  pub task: Option<String>,
+
+  /// Set container name (default is the first container in the task definition)
+  #[clap(long, env, alias = "container-name")]
+  pub container: Option<String>,
+}
+
+#[derive(Args, Debug)]
 pub struct ExportEnvSecretsCommandArguments {
   /// Env variables to export
   #[clap(short, long, env)]
@@ -139,6 +162,10 @@ pub enum Commands {
   /// Run command on ECS cluster
   #[clap(alias = "run_command")]
   RunCommand(RunCommandArguments),
+
+  /// Exec command inside ECS task
+  #[clap(alias = "exec_command")]
+  Exec(ExecCommandArguments),
 
   /// Export environment variables from AWS SSM Parameter Store
   #[clap(alias = "export_env_secrets")]

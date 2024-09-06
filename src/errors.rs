@@ -11,8 +11,9 @@ use aws_sdk_ecs::operation::{
   list_services::ListServicesError, list_task_definitions::ListTaskDefinitionsError,
   list_tasks::ListTasksError, register_task_definition::RegisterTaskDefinitionError,
   run_task::RunTaskError, update_service::UpdateServiceError,
+  execute_command::ExecuteCommandError,
 };
-use aws_sdk_ssm::operation::get_parameters::GetParametersError;
+use aws_sdk_ssm::operation::{get_parameters::GetParametersError, terminate_session::TerminateSessionError};
 use miette::Diagnostic;
 use thiserror::Error;
 
@@ -54,6 +55,10 @@ pub enum EcsHelperVarietyError {
   #[diagnostic(code(ecs_helper::auth::parse_token_from_utf8_error))]
   ParseTokenFromUtf8Error(#[from] std::string::FromUtf8Error),
 
+  #[error("Failed to serialize JSON:\n{0}")]
+  #[diagnostic(code(ecs_helper::auth::json_serialization_error))]
+  JsonSerializationError(#[from] serde_json::Error),
+
   #[error("Login command was failed\n{0}")]
   #[diagnostic(code(ecs_helper::login::login_failed))]
   LoginFailed(String),
@@ -65,6 +70,10 @@ pub enum EcsHelperVarietyError {
   #[error("Describe images was failed:\n{0}")]
   #[diagnostic(code(ecs_helper::ecr::describe_images_error))]
   DescribeImagesError(#[from] SdkError<DescribeImagesError>),
+
+  #[error("Failed to terminate session:\n{0}")]
+  #[diagnostic(code(ecs_helper::ssm::terninate_session_error))]
+  TerminateSessionError(#[from] SdkError<TerminateSessionError>),
 
   #[error("Failed to extract image")]
   #[diagnostic(code(ecs_helper::ecr::extract_image_error))]
@@ -102,9 +111,21 @@ pub enum EcsHelperVarietyError {
   #[diagnostic(code(ecs_helper::ecs::no_specified_service))]
   NoSpecifiedService(String),
 
+  #[error("Task specified in cli not exists, tasks you have:\n{0}")]
+  #[diagnostic(code(ecs_helper::ecs::no_specified_task))]
+  NoSpecifiedTask(String),
+
+  #[error("Container specified in cli not exists, containers you have:\n{0}")]
+  #[diagnostic(code(ecs_helper::ecs::no_specified_container))]
+  NoSpecifiedContainer(String),
+
   #[error("Failed to run task:\n{0}")]
   #[diagnostic(code(ecs_helper::ecs::run_task_error))]
   RunTaskError(#[from] SdkError<RunTaskError>),
+
+  #[error("Failed to execute command inside container:\n{0}")]
+  #[diagnostic(code(ecs_helper::ecs::execute_command_error))]
+  ExecuteCommandError(#[from] SdkError<ExecuteCommandError>),
 
   #[error("No tasks found")]
   #[diagnostic(code(ecs_helper::ecs::no_tasks_found))]
@@ -173,6 +194,10 @@ pub enum EcsHelperVarietyError {
   #[error("Failed to update service:\n{0}")]
   #[diagnostic(code(ecs_helper::ecs::update_service_error))]
   UpdateServiceError(#[from] SdkError<UpdateServiceError>),
+
+  #[error("Failed to find container\n")]
+  #[diagnostic(code(ecs_helper::ecs::cannot_find_container))]
+  CannotFindContainer,
 
   #[error("Failed to find container defunition\n")]
   #[diagnostic(code(ecs_helper::ecs::cannot_find_container_definition))]

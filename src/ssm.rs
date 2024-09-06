@@ -37,4 +37,19 @@ impl SSMClient {
 
     Ok(parameters)
   }
+
+  pub async fn terminate_session(
+    &self,
+    session_id: String,
+  ) -> miette::Result<(), EcsHelperVarietyError> {
+      let _output = self
+      .client
+      .terminate_session()
+      .session_id(session_id)
+      .send()
+      .await
+      .map_err(EcsHelperVarietyError::TerminateSessionError)?;
+
+    Ok(())
+  }
 }
