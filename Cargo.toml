@@ -4,9 +4,9 @@ description = "A tool for managing the deployment process of an application in A
 license = "MIT"
 authors = ["Vasiliy Kuzenkov <batbondik0@gmail.com>"]
 keywords = ["AWS", "cli", "ECS"]
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
-rust-version = "1.75.0"
+rust-version = "1.81.0"
 build = "./build.rs"
 
 [[bin]]
@@ -18,34 +18,34 @@ strip = true    # Automatically strip symbols from the binary.
 opt-level = "z" # Optimize for size.
 
 [dependencies]
-aws-config = { version = "1.5.4", features = ["behavior-version-latest"] }
-aws-sdk-ecr = "1.37.0"
-aws-sdk-ecrpublic = "1.36.0"
-aws-sdk-ecs = "1.37.0"
-aws-sdk-ssm = "1.37.0"
+aws-config = { version = "1.5.5", features = ["behavior-version-latest"] }
+aws-sdk-ecr = "1.43.0"
+aws-sdk-ecrpublic = "1.41.0"
+aws-sdk-ecs = "1.43.0"
+aws-sdk-ssm = "1.46.0"
 aws-smithy-runtime = { version = "1.6.2", features = ["test-util"] }
 aws-smithy-types = { version = "1.2.0", features = ["test-util"] }
 aws-smithy-runtime-api = { version = "1.7.1", features = ["test-util"] }
-base64 = "0.22.0"
-clap = { version = "4.4.12", features = ["derive", "env"] }
+base64 = "0.22.1"
+clap = { version = "4.5.17", features = ["derive", "env"] }
 futures = "0.3.30"
 git2 = "0.19.0"
 http = "1.1.0"
-log = "0.4.20"
-miette = { version = "7.1.0", features = ["fancy"] }
-regex = "1.10.2"
-thiserror = "1.0.56"
-tokio = { version = "1", features = ["full"] }
+log = "0.4.22"
+miette = { version = "7.2.0", features = ["fancy"] }
+regex = "1.10.6"
+thiserror = "1.0.63"
+tokio = { version = "1.40.0", features = ["full"] }
 tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
 aws-sdk-sts = "1.10.0"
-serde = { version = "1.0.209", features = ["derive"] }
-serde_json = "1.0.127"
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
 
 [dev-dependencies]
-assert_cmd = "2.0.12"
-sealed_test = "1.0.0"
+assert_cmd = "2.0.16"
+sealed_test = "1.1.0"
 
 [build-dependencies]
 clap = { version = "4.4.12", features = ["derive", "env"] }
-clap_mangen = "0.2.20"
-clap_complete = "4.5.2"
+clap_mangen = "0.2.23"
+clap_complete = "4.5.26"
