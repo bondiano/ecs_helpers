@@ -1,6 +1,6 @@
 use ecs_helpers::{
   args::ExecCommandArguments, cluster_helpers, config::Config, ecs::EcsClient,
-  errors::EcsHelperVarietyError, service_helpers, Command, task_helpers, ssm::SSMClient,
+  errors::EcsHelperVarietyError, service_helpers, ssm::SSMClient, task_helpers, Command,
 };
 
 use serde::{Deserialize, Serialize};
@@ -50,10 +50,7 @@ impl Command for ExecCommand {
   }
 
   async fn run(&self) -> miette::Result<(), EcsHelperVarietyError> {
-    let Config {
-      region,
-      ..
-    } = &self.config;
+    let Config { region, .. } = &self.config;
 
     let cluster =
       cluster_helpers::get_current_cluster(&self.ecs_client, &self.config, &self.cluster).await?;
@@ -62,13 +59,23 @@ impl Command for ExecCommand {
       service_helpers::get_current_service(&self.ecs_client, &self.config, &cluster, &self.service)
         .await?;
 
-    let task =
-      task_helpers::get_current_task(&self.ecs_client, &self.config, &cluster, &service, &self.task)
-        .await?;
+    let task = task_helpers::get_current_task(
+      &self.ecs_client,
+      &self.config,
+      &cluster,
+      &service,
+      &self.task,
+    )
+    .await?;
 
-    let container =
-      task_helpers::get_target_container(&self.ecs_client, &self.config, &cluster, &task, &self.container)
-        .await?;
+    let container = task_helpers::get_target_container(
+      &self.ecs_client,
+      &self.config,
+      &cluster,
+      &task,
+      &self.container,
+    )
+    .await?;
 
     let session = self
       .ecs_client
@@ -88,10 +95,10 @@ impl Command for ExecCommand {
 
     let run_command_output = session_manager_plugin
       .args([
-          response_string.to_owned(),
-          region.to_string(),
-          "StartSession".to_string(),
-          format!("https://ssm.{}.amazonaws.com/", region.to_string())
+        response_string.to_owned(),
+        region.to_string(),
+        "StartSession".to_string(),
+        format!("https://ssm.{}.amazonaws.com/", region),
       ])
       .spawn()?;
 

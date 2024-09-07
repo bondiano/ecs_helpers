@@ -42,7 +42,7 @@ impl SSMClient {
     &self,
     session_id: String,
   ) -> miette::Result<(), EcsHelperVarietyError> {
-      let _output = self
+    let _output = self
       .client
       .terminate_session()
       .session_id(session_id)
