@@ -1,4 +1,4 @@
-FROM lukemathwalker/cargo-chef:latest-rust-1.79-alpine3.19 as chef
+FROM lukemathwalker/cargo-chef:latest-rust-1.81-alpine3.19 as chef
 WORKDIR /ecs_helpers
 
 FROM --platform=$BUILDPLATFORM chef AS planner
