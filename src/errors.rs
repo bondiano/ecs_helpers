@@ -7,13 +7,15 @@ use aws_sdk_ecr::{
 };
 use aws_sdk_ecs::operation::{
   describe_services::DescribeServicesError, describe_task_definition::DescribeTaskDefinitionError,
-  describe_tasks::DescribeTasksError, list_clusters::ListClustersError,
-  list_services::ListServicesError, list_task_definitions::ListTaskDefinitionsError,
-  list_tasks::ListTasksError, register_task_definition::RegisterTaskDefinitionError,
-  run_task::RunTaskError, update_service::UpdateServiceError,
-  execute_command::ExecuteCommandError,
+  describe_tasks::DescribeTasksError, execute_command::ExecuteCommandError,
+  list_clusters::ListClustersError, list_services::ListServicesError,
+  list_task_definitions::ListTaskDefinitionsError, list_tasks::ListTasksError,
+  register_task_definition::RegisterTaskDefinitionError, run_task::RunTaskError,
+  update_service::UpdateServiceError,
 };
-use aws_sdk_ssm::operation::{get_parameters::GetParametersError, terminate_session::TerminateSessionError};
+use aws_sdk_ssm::operation::{
+  get_parameters::GetParametersError, terminate_session::TerminateSessionError,
+};
 use miette::Diagnostic;
 use thiserror::Error;
 

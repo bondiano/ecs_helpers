@@ -53,8 +53,7 @@ pub async fn get_target_container(
 
   let task = ecs_client.describe_task(task_arn, cluster).await?;
   let containers = task.containers.unwrap_or_default();
-  let container_names =
-    containers
+  let container_names = containers
     .iter()
     .map(|item| item.name.as_ref().unwrap().to_string())
     .collect::<Vec<_>>()

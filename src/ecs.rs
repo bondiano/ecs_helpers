@@ -1,6 +1,9 @@
 use aws_config::SdkConfig;
 use aws_sdk_ecs::{
-  types::{ContainerDefinition, DesiredStatus, LaunchType, NetworkConfiguration, Service, Session, Task, TaskDefinition},
+  types::{
+    ContainerDefinition, DesiredStatus, LaunchType, NetworkConfiguration, Service, Session, Task,
+    TaskDefinition,
+  },
   Client,
 };
 
@@ -385,7 +388,10 @@ mod tests {
     let cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/default".to_owned();
     let service_arn = "arn:aws:ecs:us-east-1:123456789012:service/default/web".to_owned();
 
-    let tasks = ecs_client.get_tasks(&cluster_arn, &service_arn).await.unwrap();
+    let tasks = ecs_client
+      .get_tasks(&cluster_arn, &service_arn)
+      .await
+      .unwrap();
 
     assert_eq!(tasks.len(), 1);
   }
@@ -471,7 +477,8 @@ mod tests {
 
     let ecs_client = EcsClient::new(&sdk_config);
     let cluster_arn = "arn:aws:ecs:us-east-1:123456789012:cluster/default".to_owned();
-    let task_arn = "arn:aws:ecs:us-east-1:123456789012:task/cluster/j2h3g4jh32jh23j4hg2j3h4hj2g3j4g".to_owned();
+    let task_arn =
+      "arn:aws:ecs:us-east-1:123456789012:task/cluster/j2h3g4jh32jh23j4hg2j3h4hj2g3j4g".to_owned();
     let container_arn = "arn:aws:ecs:us-east-1:123456789012:container/cluster/53df858569f6d3a6e7c0f59b1/46b999999997d-5a58-4de8-a90c-ca9bd338e3a3".to_owned();
 
     let task = ecs_client

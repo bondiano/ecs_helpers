@@ -6,7 +6,7 @@ use ecs_helpers::{
   config::Config,
 };
 
-use crate::commands::{ExportImagesCommand, LoginCommand, RunCommandCommand, ExecCommand};
+use crate::commands::{ExecCommand, ExportImagesCommand, LoginCommand, RunCommandCommand};
 
 mod commands;
 
