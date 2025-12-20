@@ -157,7 +157,9 @@ mod tests {
   #[sealed_test]
   fn test_extract_commit_sha() {
     let expected_commit_sha = "1234567890";
-    std::env::set_var("CI_COMMIT_SHA", expected_commit_sha);
+    unsafe {
+      std::env::set_var("CI_COMMIT_SHA", expected_commit_sha);
+    }
 
     let commit_sha = Config::extract_commit_sha().unwrap();
     assert_eq!(commit_sha, expected_commit_sha);
@@ -165,7 +167,9 @@ mod tests {
 
   #[sealed_test]
   fn test_extract_environment_from_env() {
-    std::env::set_var("CI_COMMIT_BRANCH", "master");
+    unsafe {
+      std::env::set_var("CI_COMMIT_BRANCH", "master");
+    }
 
     let environment = Config::extract_environment().unwrap();
     assert_eq!(environment, "production");

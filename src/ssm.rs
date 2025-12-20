@@ -1,5 +1,5 @@
 use aws_config::SdkConfig;
-use aws_sdk_ssm::{types::Parameter, Client};
+use aws_sdk_ssm::{Client, types::Parameter};
 
 use crate::errors::EcsHelperVarietyError;
 

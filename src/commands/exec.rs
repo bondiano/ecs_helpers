@@ -1,6 +1,6 @@
 use ecs_helpers::{
-  args::ExecCommandArguments, cluster_helpers, config::Config, ecs::EcsClient,
-  errors::EcsHelperVarietyError, service_helpers, ssm::SSMClient, task_helpers, Command,
+  Command, args::ExecCommandArguments, cluster_helpers, config::Config, ecs::EcsClient,
+  errors::EcsHelperVarietyError, service_helpers, ssm::SSMClient, task_helpers,
 };
 
 use serde::{Deserialize, Serialize};

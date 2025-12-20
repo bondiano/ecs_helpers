@@ -1,5 +1,5 @@
 use ecs_helpers::{
-  args::LoginCommandArguments, auth, config::Config, errors::EcsHelperVarietyError, Command,
+  Command, args::LoginCommandArguments, auth, config::Config, errors::EcsHelperVarietyError,
 };
 
 pub struct LoginCommand {

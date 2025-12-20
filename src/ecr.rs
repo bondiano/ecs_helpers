@@ -1,10 +1,10 @@
 use aws_config::SdkConfig;
 use aws_sdk_ecr::{
-  types::{ImageDetail, ImageIdentifier, Repository},
   Client,
+  types::{ImageDetail, ImageIdentifier, Repository},
 };
 use aws_sdk_ecs::types::ContainerDefinition;
-use base64::{alphabet, engine, Engine};
+use base64::{Engine, alphabet, engine};
 
 use crate::errors::EcsHelperVarietyError;
 

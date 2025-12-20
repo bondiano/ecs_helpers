@@ -1,7 +1,8 @@
+use assert_cmd::cargo::cargo_bin_cmd;
+
 #[test]
 fn test_help() {
-  assert_cmd::Command::cargo_bin("ecs_helpers")
-    .unwrap()
+  cargo_bin_cmd!("ecs_helpers")
     .arg("--help")
     .assert()
     .success()
@@ -10,8 +11,7 @@ fn test_help() {
 
 #[test]
 fn test_ecr_login_help() {
-  assert_cmd::Command::cargo_bin("ecs_helpers")
-    .unwrap()
+  cargo_bin_cmd!("ecs_helpers")
     .arg("ecr_login")
     .arg("--help")
     .assert()
@@ -21,8 +21,7 @@ fn test_ecr_login_help() {
 
 #[test]
 fn test_login_help() {
-  assert_cmd::Command::cargo_bin("ecs_helpers")
-    .unwrap()
+  cargo_bin_cmd!("ecs_helpers")
     .arg("login")
     .arg("--help")
     .assert()
@@ -32,8 +31,7 @@ fn test_login_help() {
 
 #[test]
 fn test_export_images_help() {
-  assert_cmd::Command::cargo_bin("ecs_helpers")
-    .unwrap()
+  cargo_bin_cmd!("ecs_helpers")
     .arg("export_images")
     .arg("--help")
     .assert()
@@ -43,8 +41,7 @@ fn test_export_images_help() {
 
 #[test]
 fn test_run_command_help() {
-  assert_cmd::Command::cargo_bin("ecs_helpers")
-    .unwrap()
+  cargo_bin_cmd!("ecs_helpers")
     .arg("run_command")
     .arg("--help")
     .assert()
@@ -54,8 +51,7 @@ fn test_run_command_help() {
 
 #[test]
 fn test_export_env_secrets_help() {
-  assert_cmd::Command::cargo_bin("ecs_helpers")
-    .unwrap()
+  cargo_bin_cmd!("ecs_helpers")
     .arg("export_env_secrets")
     .arg("--help")
     .assert()
@@ -65,8 +61,7 @@ fn test_export_env_secrets_help() {
 
 #[test]
 fn test_build_and_push_help() {
-  assert_cmd::Command::cargo_bin("ecs_helpers")
-    .unwrap()
+  cargo_bin_cmd!("ecs_helpers")
     .arg("build_and_push")
     .arg("--help")
     .assert()
@@ -76,8 +71,7 @@ fn test_build_and_push_help() {
 
 #[test]
 fn test_deploy_help() {
-  assert_cmd::Command::cargo_bin("ecs_helpers")
-    .unwrap()
+  cargo_bin_cmd!("ecs_helpers")
     .arg("deploy")
     .arg("--help")
     .assert()

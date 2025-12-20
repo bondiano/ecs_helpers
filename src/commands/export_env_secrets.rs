@@ -1,6 +1,6 @@
 use ecs_helpers::{
-  args::ExportEnvSecretsCommandArguments, config::Config, errors::EcsHelperVarietyError,
-  ssm::SSMClient, Command,
+  Command, args::ExportEnvSecretsCommandArguments, config::Config, errors::EcsHelperVarietyError,
+  ssm::SSMClient,
 };
 
 pub struct ExportEnvSecretsCommand {

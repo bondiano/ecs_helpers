@@ -1,6 +1,6 @@
 use ecs_helpers::{
-  args::BuildAndPushCommandArguments, auth, config::Config, ecr::EcrClient,
-  errors::EcsHelperVarietyError, Command,
+  Command, args::BuildAndPushCommandArguments, auth, config::Config, ecr::EcrClient,
+  errors::EcsHelperVarietyError,
 };
 use futures::try_join;
 use std::process::Stdio;

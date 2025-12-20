@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use aws_sdk_ecs::types::Service;
 use ecs_helpers::{
-  args::DeployCommandArguments, cluster_helpers, config::Config, ecr::EcrClient, ecs::EcsClient,
-  errors::EcsHelperVarietyError, service_helpers, Command,
+  Command, args::DeployCommandArguments, cluster_helpers, config::Config, ecr::EcrClient,
+  ecs::EcsClient, errors::EcsHelperVarietyError, service_helpers,
 };
 
 const DEFAULT_STEP: u64 = 5;

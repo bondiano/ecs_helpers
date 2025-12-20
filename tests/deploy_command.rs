@@ -1,7 +1,8 @@
+use assert_cmd::cargo::cargo_bin_cmd;
+
 #[test]
 fn test_deploy_command_without_environment() {
-  assert_cmd::Command::cargo_bin("ecs_helpers")
-    .unwrap()
+  cargo_bin_cmd!("ecs_helpers")
     .arg("--project")
     .arg("test")
     .arg("--environment")

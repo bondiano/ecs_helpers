@@ -1,10 +1,10 @@
 use aws_config::SdkConfig;
 use aws_sdk_ecs::{
+  Client,
   types::{
     ContainerDefinition, DesiredStatus, LaunchType, NetworkConfiguration, Service, Session, Task,
     TaskDefinition,
   },
-  Client,
 };
 
 use crate::errors::EcsHelperVarietyError;

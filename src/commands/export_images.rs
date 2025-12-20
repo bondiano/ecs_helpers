@@ -1,6 +1,6 @@
 use ecs_helpers::{
-  args::ExportImagesArguments, config::Config, ecr::EcrClient, errors::EcsHelperVarietyError,
-  Command,
+  Command, args::ExportImagesArguments, config::Config, ecr::EcrClient,
+  errors::EcsHelperVarietyError,
 };
 use regex::Regex;
 
