@@ -107,11 +107,11 @@ impl Config {
     let branch = repo
       .head()
       .map_err(|err| EcsHelperVarietyError::ExtractEnvironmentError(err.to_string()))?;
-    let branch = branch
-      .shorthand()
-      .ok_or(EcsHelperVarietyError::ExtractEnvironmentError(
-        "Could not extract branch name.".to_string(),
-      ))?;
+    let branch = branch.shorthand().map_err(|err| {
+      EcsHelperVarietyError::ExtractEnvironmentError(format!(
+        "Could not extract branch name: {err}"
+      ))
+    })?;
 
     Ok(branch.to_string())
   }

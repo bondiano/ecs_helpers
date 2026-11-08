@@ -2,7 +2,7 @@ use assert_cmd::cargo::cargo_bin_cmd;
 
 #[test]
 fn test_build_and_push_command_without_environment() {
-  cargo_bin_cmd!("ecs_helpers")
+  let _ = cargo_bin_cmd!("ecs_helpers")
     .arg("--project")
     .arg("test")
     .arg("--application")
@@ -17,7 +17,7 @@ fn test_build_and_push_command_without_environment() {
 
 #[test]
 fn test_build_and_push_command_with_custom_docker_file() {
-  cargo_bin_cmd!("ecs_helpers")
+  let _ = cargo_bin_cmd!("ecs_helpers")
     .arg("--project")
     .arg("test")
     .arg("--application")
@@ -36,7 +36,7 @@ fn test_build_and_push_command_with_custom_docker_file() {
 
 #[test]
 fn test_build_and_push_command_with_target() {
-  cargo_bin_cmd!("ecs_helpers")
+  let _ = cargo_bin_cmd!("ecs_helpers")
     .arg("--project")
     .arg("test")
     .arg("--application")
